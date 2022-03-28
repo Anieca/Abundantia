@@ -1,0 +1,6 @@
+credentials
+apis.json
+
+.venv
+.mypy_cache
+__pycache__
