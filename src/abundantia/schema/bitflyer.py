@@ -1,7 +1,8 @@
-from pydantic import BaseModel
+from dataclasses import dataclass, field
 
 
-class BitFlyerExecution(BaseModel):
+@dataclass
+class BitFlyerExecution:
     id: int
     side: str
     price: float
@@ -11,9 +12,13 @@ class BitFlyerExecution(BaseModel):
     sell_child_order_acceptance_id: str
 
 
-class BitFlyer(BaseModel):
+@dataclass
+class BitFlyer:
     http_url: str = "https://api.bitflyer.com"
     ws_url: str = "wss"
     fx_btc_jpy: str = "FX_BTC_JPY"
     btc_jpy: str = "BTC_JPY"
-    symbols: list[str] = [fx_btc_jpy, btc_jpy]
+    symbols: list[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        self.symbols += [self.fx_btc_jpy, self.btc_jpy]

@@ -3,10 +3,10 @@ import pandas as pd
 
 class CSVClient:
     @classmethod
-    def dump(self, filename, obj):
+    def dump(self, filename, obj, index=False, **kwargs):
         if not any([isinstance(obj, list), isinstance(obj, pd.DataFrame)]):
             raise TypeError
-        pd.DataFrame(obj).to_csv(filename, index=False)
+        pd.DataFrame(obj).to_csv(filename, index=index, **kwargs)
 
     @classmethod
     def load(self, filename):
