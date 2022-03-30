@@ -20,4 +20,10 @@ jobs:
         pip install flake8 mypy isort black
     - name: run flake8
       run: |
-        flake8 --ignore "E203,E501,W503" $(git ls-files '*.py')
+        flake8 --ignore E203,E501,W503 $(git ls-files '*.py')
+    - name: run black
+      run: |
+        black --line-length 120 $(git ls-files '*.py')
+    - name: run mypy
+      run: |
+        mypy --ignore-missing-imports $(git ls-files '*.py')
