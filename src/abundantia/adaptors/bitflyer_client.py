@@ -5,17 +5,22 @@ import traceback
 
 import pybotters
 
-from abundantia.schema.bitflyer import BitFlyer, BitFlyerExecution
+from abundantia.schema.bitflyer import BitFlyerExecution
 from abundantia.utils import setup_logger
 
 logger = setup_logger(__name__)
 
 
 class BitFlyerClient:
-    bitflyer = BitFlyer()
+    http_url: str = "https://api.bitflyer.com"
+    ws_url: str = "wss"
+    fx_btc_jpy: str = "FX_BTC_JPY"
+    btc_jpy: str = "BTC_JPY"
+    symbols: tuple[str, ...] = (btc_jpy, fx_btc_jpy)
 
     async def get_executions_by_http(
         self,
+        product_code: str,
         before: int | str | None = None,
         after: int | str | None = None,
         count: int = 500,
@@ -24,17 +29,18 @@ class BitFlyerClient:
         """
         before は含まない
         """
+        assert product_code in self.symbols
         count = min(count, max_executions)
 
         all_executions: list[BitFlyerExecution] = []
-        params = {"product_code": self.bitflyer.fx_btc_jpy, "count": count}
+        params = {"product_code": product_code, "count": count}
 
         if before is not None:
             params["before"] = before
         if after is not None:
             params["after"] = after
 
-        async with pybotters.Client(base_url=self.bitflyer.http_url) as client:
+        async with pybotters.Client(base_url=self.http_url) as client:
             while len(all_executions) < max_executions:
                 try:
                     response = await client.get("/v1/executions", params=params)
