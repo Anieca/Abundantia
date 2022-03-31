@@ -16,19 +16,17 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-        poetry run pip install --upgrade pip
-        poetry install
-        poetry add flake8 mypy isort black
+        python -m pip install --upgrade pip
+        pip install flake8 mypy isort black
     - name: flake8
       run: |
-        poetry run flake8 --ignore E203,E501,W503 $(git ls-files '*.py')
+        flake8 --ignore E203,E501,W503 $(git ls-files '*.py')
     - name: isort
       run: |
-        poetry run isort -l 120 --profile black $(git ls-files '*.py')
+        isort -l 120 --profile black $(git ls-files '*.py')
     - name: black
       run: |
-        poetry run black --line-length 120 $(git ls-files '*.py')
+        black --line-length 120 $(git ls-files '*.py')
     - name: mypy
       run: |
-        poetry run mypy --ignore-missing-imports $(git ls-files '*.py')
+        mypy --ignore-missing-imports $(git ls-files '*.py')
