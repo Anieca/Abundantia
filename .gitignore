@@ -1,10 +1,17 @@
-.DS_Store
-
-credentials
-apis.json
-
+# env
 .venv
+
+# caches
 .mypy_cache
 __pycache__
-*.csv
+.DS_Store
+
+# custom
+credentials
 resources
+notebooks
+
+apis.json
+*.csv
+*.ipynb
+.jupyter.log
