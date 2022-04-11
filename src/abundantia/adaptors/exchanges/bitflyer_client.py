@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import traceback
 
-import pybotters
+import requests
 
 from abundantia.schema.bitflyer import BitFlyerExecution
 from abundantia.utils import setup_logger
@@ -18,7 +17,7 @@ class BitFlyerClient:
     btc_jpy: str = "BTC_JPY"
     symbols: tuple[str, ...] = (btc_jpy, fx_btc_jpy)
 
-    async def get_executions_by_http(
+    def get_executions_by_http(
         self,
         product_code: str,
         before: int | str | None = None,
@@ -40,24 +39,22 @@ class BitFlyerClient:
         if after is not None:
             params["after"] = str(after)
 
-        async with pybotters.Client(base_url=self.http_url) as client:
-            while len(all_executions) < max_executions:
-                try:
-                    response = await client.get("/v1/executions", params=params)
-                    executions = await response.json()
-                    all_executions += [BitFlyerExecution(**e) for e in executions]
+        while len(all_executions) < max_executions:
+            logger.info(params)
+            try:
+                response = requests.get(f"{self.http_url}/v1/executions", params=params)
+                executions = response.json()
+            except Exception:
+                logger.error(traceback.format_exc())
+                break
 
-                    if len(executions) != count:
-                        logger.warn(f"{len(executions)} != {count}.")
-                        break
+            all_executions += [BitFlyerExecution(**e) for e in executions]
 
-                    params["before"] = str(all_executions[-1].id)
+            if len(executions) != count:
+                logger.warn(f"{len(executions)} != {count}.")
+                break
 
-                    logger.info(params)
-                    logger.info(f"{all_executions[0].id}, {all_executions[-1].id}, {len(all_executions)}")
-                    await asyncio.sleep(1)
+            params["before"] = str(all_executions[-1].id)
+            logger.info(f"{all_executions[0].id}, {all_executions[-1].id}, {len(all_executions)}")
 
-                except Exception:
-                    logger.error(traceback.format_exc())
-                    break
         return all_executions

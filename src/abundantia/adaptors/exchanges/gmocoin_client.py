@@ -1,7 +1,6 @@
-import asyncio
 import traceback
 
-import pybotters
+import requests
 
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline
 from abundantia.utils import setup_logger
@@ -16,25 +15,24 @@ class GMOCoinClient:
     btc: str = "BTC"
     symbols: tuple[str, ...] = (btc_jpy, btc)
 
-    async def get_klines_by_http(self, symbol: str, interval: str, date: str) -> list[GMOCoinKline]:
+    def get_klines_by_http(self, symbol: str, interval: str, date: str) -> list[GMOCoinKline]:
         klines: list[GMOCoinKline] = []
         params = {"symbol": symbol, "interval": interval, "date": date}
 
-        async with pybotters.Client(base_url=self.http_url) as client:
-            logger.info(params)
+        logger.info(params)
 
-            try:
-                response = await client.get("/v1/klines", params=params)
-                response = await response.json()
-            except Exception:
-                logger.error(traceback.format_exc())
-                return klines
+        try:
+            response = requests.get(f"{self.http_url}/v1/klines", params=params)
+            res_json = response.json()
+        except Exception:
+            logger.error(traceback.format_exc())
+            return klines
 
-            klines = [GMOCoinKline(**d) for d in response.get("data", [])]
+        klines = [GMOCoinKline(**d) for d in res_json.get("data", [])]
 
         return klines
 
-    async def get_executions_by_http(
+    def get_executions_by_http(
         self, symbol: str, page: int = 1, count: int = 100, max_executions: int = 100_000
     ) -> list[GMOCoinExecution]:
 
@@ -44,33 +42,30 @@ class GMOCoinClient:
         all_executions: list[GMOCoinExecution] = []
         params = {"symbol": symbol, "page": str(page), "count": str(count)}
 
-        async with pybotters.Client(base_url=self.http_url) as client:
-            while len(all_executions) < max_executions:
-                logger.info(params)
+        while len(all_executions) < max_executions:
+            logger.info(params)
 
-                try:
-                    response = await client.get("/v1/trades", params=params)
-                    response = await response.json()
-                except Exception:
-                    logger.error(traceback.format_exc())
-                    break
+            try:
+                response = requests.get(f"{self.http_url}/v1/trades", params=params)
+                res_json = response.json()
+            except Exception:
+                logger.error(traceback.format_exc())
+                break
 
-                data = response.get("data", {})
-                executions = data.get("list", [])
-                all_executions += [GMOCoinExecution(**e) for e in executions]
-                current_page = data.get("pagination", {}).get("currentPage", None)
+            data = res_json.get("data", {})
+            executions = data.get("list", [])
+            current_page = data.get("pagination", {}).get("currentPage", None)
+            all_executions += [GMOCoinExecution(**e) for e in executions]
 
-                if current_page is None:
-                    logger.warn(f"pagination error. {data}")
-                    break
+            if current_page is None:
+                logger.warn(f"pagination error. {data}")
+                break
 
-                if len(executions) != count:
-                    logger.warn(f"{len(executions)} != {count}.")
-                    break
+            if len(executions) != count:
+                logger.warn(f"{len(executions)} != {count}.")
+                break
 
-                params["page"] = str(current_page + 1)
-
-                logger.info(f"{all_executions[0].timestamp}, {all_executions[-1].timestamp}, {len(all_executions)}")
-                await asyncio.sleep(1)
+            params["page"] = str(current_page + 1)
+            logger.info(f"{all_executions[0].timestamp}, {all_executions[-1].timestamp}, {len(all_executions)}")
 
         return all_executions
