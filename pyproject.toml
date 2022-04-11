@@ -6,10 +6,8 @@ authors = ["ryo.ishii <ryoishii1101@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pybotters = "^0.10.0"
-redis = "^4.1.4"
-pydantic = "^1.9.0"
 pandas = "^1.4.1"
+pybotters = "^0.12.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -17,7 +15,6 @@ black = "^22.1.0"
 mypy = "^0.941"
 isort = "^5.10.1"
 flake8 = "^4.0.1"
-types-redis = "^4.1.18"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
