@@ -33,12 +33,12 @@ class BitFlyerClient:
         count = min(count, max_executions)
 
         all_executions: list[BitFlyerExecution] = []
-        params = {"product_code": product_code, "count": count}
+        params = {"product_code": product_code, "count": str(count)}
 
         if before is not None:
-            params["before"] = before
+            params["before"] = str(before)
         if after is not None:
-            params["after"] = after
+            params["after"] = str(after)
 
         async with pybotters.Client(base_url=self.http_url) as client:
             while len(all_executions) < max_executions:
@@ -47,15 +47,15 @@ class BitFlyerClient:
                     executions = await response.json()
                     all_executions += [BitFlyerExecution(**e) for e in executions]
 
-                    params["before"] = all_executions[-1].id
+                    if len(executions) != count:
+                        logger.warn(f"{len(executions)} != {count}.")
+                        break
+
+                    params["before"] = str(all_executions[-1].id)
 
                     logger.info(params)
                     logger.info(f"{all_executions[0].id}, {all_executions[-1].id}, {len(all_executions)}")
                     await asyncio.sleep(1)
-
-                    if len(executions) != count:
-                        logger.warn(f"{len(executions)} != {count}.")
-                        break
 
                 except Exception:
                     logger.error(traceback.format_exc())

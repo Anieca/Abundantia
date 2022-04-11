@@ -1,5 +1,5 @@
 # flake8: noqa
-from .bitflyer_client import BitFlyerClient
+from .exchanges.bitflyer_client import BitFlyerClient
+from .exchanges.gmocoin_client import GMOCoinClient
 from .files.csv_client import CSVClient
 from .files.pickle_client import PickleClient
-from .gmocoin_client import GMOCoinClient
