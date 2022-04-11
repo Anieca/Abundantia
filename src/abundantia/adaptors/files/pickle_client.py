@@ -1,13 +1,14 @@
 import pickle
+from typing import Any
 
 
 class PickleClient:
     @classmethod
-    def dump(self, filename, obj, **kwargs):
+    def dump(cls, filename: str, obj: Any) -> None:
         with open(filename, "wb") as f:
-            pickle.dump(obj, f, **kwargs)
+            pickle.dump(obj, f)
 
     @classmethod
-    def load(self, filename):
+    def load(cls, filename: str) -> Any:
         with open(filename, "rb") as f:
             return pickle.load(f)
