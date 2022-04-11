@@ -25,6 +25,7 @@ class GMOCoinKline:
     volume: str | float
 
     def __post_init__(self):
+        self.openTime = int(self.openTime)
         self.open = float(self.open)
         self.high = float(self.high)
         self.low = float(self.low)

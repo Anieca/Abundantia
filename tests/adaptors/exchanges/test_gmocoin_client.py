@@ -1,16 +1,14 @@
-import asyncio
-
 from abundantia.adaptors import GMOCoinClient
 
 
 def test_get_klines_by_http():
     client = GMOCoinClient()
-    klines = asyncio.run(client.get_klines_by_http(GMOCoinClient.btc_jpy, "1min", "20210415"))
+    klines = client.get_klines_by_http(GMOCoinClient.btc_jpy, "1min", "20210415")
     assert len(klines) == 60 * 24
 
 
 def test_get_executions_by_http():
     client = GMOCoinClient()
     count = 50
-    executions = asyncio.run(client.get_executions_by_http(GMOCoinClient.btc_jpy, max_executions=count))
+    executions = client.get_executions_by_http(GMOCoinClient.btc_jpy, max_executions=count)
     assert len(executions) == count
