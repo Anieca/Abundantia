@@ -1,14 +1,13 @@
 from abundantia.adaptors import BitFlyerClient
 from abundantia.schema.bitflyer import BitFlyerExecution
 
-client = BitFlyerClient()
+client = BitFlyerClient(log_level="WARNING")
 
 
 def test_get_executions_by_http():
     count = 50
     executions = client.get_executions_by_http(BitFlyerClient.btc_jpy, max_executions=count)
     assert len(executions) == count
-    print(executions[:2])
 
 
 def test_executions_to_kline():
