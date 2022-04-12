@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import traceback
 
+import pandas as pd
 import requests
 
 from abundantia.schema.bitflyer import BitFlyerExecution
@@ -58,3 +59,26 @@ class BitFlyerClient:
             logger.info(f"{all_executions[0].id}, {all_executions[-1].id}, {len(all_executions)}")
 
         return all_executions
+
+    @staticmethod
+    def convert_executions_to_common_klines(
+        executions: list[BitFlyerExecution], freq: str = "T", inclusive: str = "neither"
+    ) -> pd.DataFrame:
+
+        df = pd.DataFrame(executions)
+
+        df["time"] = pd.to_datetime(df["exec_date"])
+        df.set_index("time", inplace=True)
+        df.sort_index(inplace=True)
+
+        start: pd.Timestamp = df.index.min().round(freq=freq)
+        end: pd.Timestamp = df.index.max().round(freq=freq)
+        date_range = pd.date_range(start, end, name="open_time", freq=freq, inclusive=inclusive)
+
+        group = df.resample(freq)
+        ohlc: pd.DataFrame = group["price"].ohlc()
+        volume: pd.Series[float] = group["size"].sum().rename("volume")
+
+        klines = pd.DataFrame(index=date_range).join(ohlc).join(volume)
+
+        return klines
