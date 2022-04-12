@@ -1,33 +1,21 @@
-from __future__ import annotations
+from typing import Literal
 
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 
 
 @dataclass
 class GMOCoinExecution:
-    price: float | str
-    side: str
-    size: float | str
+    price: float
+    side: Literal["SELL", "BUY"]
+    size: float
     timestamp: str
-
-    def __post_init__(self):
-        self.price = float(self.price)
-        self.size = float(self.size)
 
 
 @dataclass
 class GMOCoinKline:
-    openTime: str | int
-    open: str | float
-    high: str | float
-    low: str | float
-    close: str | float
-    volume: str | float
-
-    def __post_init__(self):
-        self.openTime = int(self.openTime)
-        self.open = float(self.open)
-        self.high = float(self.high)
-        self.low = float(self.low)
-        self.close = float(self.close)
-        self.volume = float(self.volume)
+    openTime: int
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
