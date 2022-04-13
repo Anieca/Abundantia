@@ -19,3 +19,15 @@ def setup_logger(name: str, level: str = "DEBUG", logfile_path: str | None = Non
         logger.addHandler(handler)
 
     return logger
+
+
+def convert_freq_to_interval(freq: str) -> int:
+    freq_code_map: dict[str, int] = {"S": 1, "T": 60, "H": 3600}
+
+    unit_str = freq[-1]
+    num_str = freq[:-1]
+
+    num = int(num_str) if len(num_str) > 0 else 1
+    unit = freq_code_map[unit_str]
+
+    return num * unit
