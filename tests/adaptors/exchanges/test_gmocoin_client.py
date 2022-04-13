@@ -20,9 +20,10 @@ def test_convert_executions_to_common_klines():
         GMOCoinExecution(price=5010271.0, side="SELL", size=0.01, timestamp="2022-04-12T14:48:01.828Z"),
         GMOCoinExecution(price=5010271.0, side="BUY", size=0.01, timestamp="2022-04-12T14:48:01.828Z"),
     ]
+    symbol = GMOCoinClient.btc_jpy
 
-    klines = client.convert_executions_to_common_klines(executions, inclusive="neither")
+    klines = client.convert_executions_to_common_klines(symbol, executions, inclusive="neither")
     assert len(klines) == 0
 
-    klines = client.convert_executions_to_common_klines(executions, inclusive="both")
+    klines = client.convert_executions_to_common_klines(symbol, executions, inclusive="both")
     assert len(klines) == 1
