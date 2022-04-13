@@ -9,7 +9,6 @@ from abundantia.schema.common import CommonKlineModel
 class SQLiteClient:
     def __init__(self, file_path: str = "sqlite:///resources/db.sqlite3") -> None:
         self.engine = sqlalchemy.create_engine(file_path, echo=True)
-        # self.session = sessionmaker(bind=self.engine)
 
     def create_tables(self) -> None:
         mapper_registry.metadata.create_all(bind=self.engine)

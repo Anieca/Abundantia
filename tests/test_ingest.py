@@ -13,7 +13,6 @@ def test_gmocoin_klines_ingestion():
     executions = gmo.get_executions_by_http(symbol, max_executions=1000)
 
     klines: pd.DataFrame = gmo.convert_executions_to_common_klines(symbol, executions, inclusive="neither")
-    print(klines)
 
     sqlite.drop_common_kline_table()
     sqlite.create_tables()
