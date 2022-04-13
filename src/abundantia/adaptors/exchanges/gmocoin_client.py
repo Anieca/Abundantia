@@ -1,10 +1,8 @@
-import traceback
 from datetime import datetime
 from time import sleep
-from typing import Any, Literal
+from typing import Literal
 
 import pandas as pd
-import requests
 
 from abundantia.adaptors import BaseClient
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline
@@ -32,24 +30,16 @@ class GMOCoinClient(BaseClient):
         604800: "1week",
     }
 
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-
     def get_klines_by_http(self, symbol: str, interval: str, date: str) -> list[GMOCoinKline]:
         klines: list[GMOCoinKline] = []
         params = {"symbol": symbol, "interval": interval, "date": date}
 
-        self.logger.info(params)
+        result = self.get(f"{self.http_url}/v1/klines", params)
 
-        try:
-            response = requests.get(f"{self.http_url}/v1/klines", params=params)
-            res_json = response.json()
-        except Exception:
-            self.logger.error(traceback.format_exc())
+        if result is None:
             return klines
 
-        klines = [GMOCoinKline(**d) for d in res_json.get("data", [])]
-
+        klines = [GMOCoinKline(**d) for d in result.get("data", [])]
         return klines
 
     def get_executions_by_http(
@@ -63,22 +53,18 @@ class GMOCoinClient(BaseClient):
         params = {"symbol": symbol, "page": str(page), "count": str(count)}
 
         while len(all_executions) < max_executions:
-            self.logger.info(params)
+            result = self.get(f"{self.http_url}/v1/trades", params=params)
 
-            try:
-                response = requests.get(f"{self.http_url}/v1/trades", params=params)
-                res_json = response.json()
-            except Exception:
-                self.logger.error(traceback.format_exc())
+            if result is None:
                 break
 
-            data = res_json.get("data", {})
+            data = result.get("data", {})
             executions = data.get("list", [])
             current_page = data.get("pagination", {}).get("currentPage", None)
             all_executions += [GMOCoinExecution(**e) for e in executions]
 
             if current_page is None:
-                self.logger.warn(f"pagination error. {res_json}")
+                self.logger.warn(f"pagination error. {result}")
                 break
 
             if len(executions) != count:

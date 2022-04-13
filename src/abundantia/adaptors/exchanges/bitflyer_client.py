@@ -1,23 +1,17 @@
 from __future__ import annotations
 
-import traceback
-
 import pandas as pd
-import requests
 
+from abundantia.adaptors import BaseClient
 from abundantia.schema.bitflyer import BitFlyerExecution
-from abundantia.utils import setup_logger
 
 
-class BitFlyerClient:
+class BitFlyerClient(BaseClient):
     http_url: str = "https://api.bitflyer.com"
     ws_url: str = "wss"
     fx_btc_jpy: str = "FX_BTC_JPY"
     btc_jpy: str = "BTC_JPY"
     symbols: tuple[str, ...] = (btc_jpy, fx_btc_jpy)
-
-    def __init__(self, log_level: str = "DEBUG") -> None:
-        self.logger = setup_logger(__name__, log_level)
 
     def get_executions_by_http(
         self,
@@ -42,14 +36,13 @@ class BitFlyerClient:
             params["after"] = str(after)
 
         while len(all_executions) < max_executions:
-            self.logger.info(params)
-            try:
-                response = requests.get(f"{self.http_url}/v1/executions", params=params)
-                executions = response.json()
-            except Exception:
-                self.logger.error(traceback.format_exc())
+
+            result = self.get(f"{self.http_url}/v1/executions", params=params)
+
+            if result is None:
                 break
 
+            executions = result
             all_executions += [BitFlyerExecution(**e) for e in executions]
 
             if len(executions) != count:
