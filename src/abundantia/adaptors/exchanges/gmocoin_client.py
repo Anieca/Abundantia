@@ -1,21 +1,39 @@
 import traceback
+from datetime import datetime
+from time import sleep
+from typing import Any, Literal
 
 import pandas as pd
 import requests
 
+from abundantia.adaptors import BaseClient
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline
-from abundantia.utils import setup_logger
+from abundantia.utils import convert_freq_to_interval
 
 
-class GMOCoinClient:
+class GMOCoinClient(BaseClient):
     http_url: str = "https://api.coin.z.com/public"
     ws_url: str = "wss://api.coin.z.com/ws/"
     btc_jpy: str = "BTC_JPY"
     btc: str = "BTC"
     symbols: tuple[str, ...] = (btc_jpy, btc)
 
-    def __init__(self, log_level: str = "DEBUG") -> None:
-        self.logger = setup_logger(__name__, log_level)
+    INTERVALS: dict[int, str] = {
+        60: "1min",
+        300: "5min",
+        600: "10min",
+        900: " 15min",
+        1800: " 30min",
+        3600: " 1hour",
+        14400: "4hour",
+        28800: "8hour",
+        43200: "12hour",
+        86400: "1day",
+        604800: "1week",
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
     def get_klines_by_http(self, symbol: str, interval: str, date: str) -> list[GMOCoinKline]:
         klines: list[GMOCoinKline] = []
@@ -60,7 +78,7 @@ class GMOCoinClient:
             all_executions += [GMOCoinExecution(**e) for e in executions]
 
             if current_page is None:
-                self.logger.warn(f"pagination error. {data}")
+                self.logger.warn(f"pagination error. {res_json}")
                 break
 
             if len(executions) != count:
@@ -69,12 +87,16 @@ class GMOCoinClient:
 
             params["page"] = str(current_page + 1)
             self.logger.info(f"{all_executions[0].timestamp}, {all_executions[-1].timestamp}, {len(all_executions)}")
+            sleep(1)
 
         return all_executions
 
     @staticmethod
     def convert_executions_to_common_klines(
-        executions: list[GMOCoinExecution], freq: str = "T", inclusive: str = "neither"
+        symbol: str,
+        executions: list[GMOCoinExecution],
+        freq: str = "T",
+        inclusive: Literal["both", "neither"] = "neither",
     ) -> pd.DataFrame:
 
         df = pd.DataFrame(executions)
@@ -91,6 +113,17 @@ class GMOCoinClient:
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
 
-        klines = pd.DataFrame(index=date_range).join(ohlc).join(volume)
+        klines = pd.DataFrame(index=date_range)
+        klines["exchange"] = "GMOCoin"
+        klines["symbol"] = symbol
+        klines["interval"] = convert_freq_to_interval(freq)
+        klines = klines.join(ohlc).join(volume)
+
+        klines = klines.reset_index()
+        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000)
 
         return klines
+
+    @classmethod
+    def convert_interval_to_specific(cls, interval: int) -> str:
+        return cls.INTERVALS[interval]
