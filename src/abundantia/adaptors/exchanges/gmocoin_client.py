@@ -10,6 +10,7 @@ from abundantia.utils import convert_interval_to_freq
 
 
 class GMOCoinClient(BaseClient):
+    name: str = "GMOCoin"
     http_url: str = "https://api.coin.z.com/public"
     ws_url: str = "wss://api.coin.z.com/ws/"
     btc_jpy: str = "BTC_JPY"
@@ -111,12 +112,13 @@ class GMOCoinClient(BaseClient):
 
         return klines
 
-    @staticmethod
-    def convert_klines_to_common_klines(symbol: str, gmo_klines: list[GMOCoinKline], interval: int) -> pd.DataFrame:
+    def convert_klines_to_common_klines(
+        self, symbol: str, gmo_klines: list[GMOCoinKline], interval: int
+    ) -> pd.DataFrame:
         klines = pd.DataFrame(gmo_klines)
         klines.sort_values(by="openTime", inplace=True)
 
-        klines["exchange"] = "GMOCoin"
+        klines["exchange"] = self.name
         klines["symbol"] = symbol
         klines["interval"] = interval
 

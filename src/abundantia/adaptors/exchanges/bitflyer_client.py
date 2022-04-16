@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 import pandas as pd
 
 from abundantia.adaptors import BaseClient
 from abundantia.schema.bitflyer import BitFlyerExecution
+from abundantia.utils import convert_interval_to_freq
 
 
 class BitFlyerClient(BaseClient):
+    name: str = "BitFlyer"
     http_url: str = "https://api.bitflyer.com"
     ws_url: str = "wss"
     fx_btc_jpy: str = "FX_BTC_JPY"
@@ -54,10 +58,10 @@ class BitFlyerClient(BaseClient):
 
         return all_executions
 
-    @staticmethod
     def convert_executions_to_common_klines(
-        executions: list[BitFlyerExecution], freq: str = "T", inclusive: str = "neither"
+        self, symbol: str, executions: list[BitFlyerExecution], interval: int, inclusive: str = "neither"
     ) -> pd.DataFrame:
+        freq = convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
 
@@ -73,6 +77,13 @@ class BitFlyerClient(BaseClient):
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
 
-        klines = pd.DataFrame(index=date_range).join(ohlc).join(volume)
+        klines = pd.DataFrame(index=date_range)
+        klines["exchange"] = self.name
+        klines["symbol"] = symbol
+        klines["interval"] = interval
+        klines = klines.join(ohlc).join(volume)
+
+        klines = klines.reset_index()
+        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000)
 
         return klines
