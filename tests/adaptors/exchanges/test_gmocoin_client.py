@@ -5,7 +5,7 @@ client = GMOCoinClient(log_level="WARNING")
 
 
 def test_get_klines_by_http():
-    klines = client.get_klines_by_http(GMOCoinClient.btc_jpy, "1min", "20210415")
+    klines = client.get_klines_by_http(GMOCoinClient.btc_jpy, 60, "20210415")
     assert len(klines) == 60 * 24
 
 
@@ -21,9 +21,10 @@ def test_convert_executions_to_common_klines():
         GMOCoinExecution(price=5010271.0, side="BUY", size=0.01, timestamp="2022-04-12T14:48:01.828Z"),
     ]
     symbol = GMOCoinClient.btc_jpy
+    interval = 60
 
-    klines = client.convert_executions_to_common_klines(symbol, executions, inclusive="neither")
+    klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="neither")
     assert len(klines) == 0
 
-    klines = client.convert_executions_to_common_klines(symbol, executions, inclusive="both")
+    klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="both")
     assert len(klines) == 1
