@@ -6,7 +6,7 @@ import pandas as pd
 
 from abundantia.adaptors import BaseClient
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline
-from abundantia.utils import convert_freq_to_interval
+from abundantia.utils import convert_interval_to_freq
 
 
 class GMOCoinClient(BaseClient):
@@ -30,9 +30,9 @@ class GMOCoinClient(BaseClient):
         604800: "1week",
     }
 
-    def get_klines_by_http(self, symbol: str, interval: str, date: str) -> list[GMOCoinKline]:
+    def get_klines_by_http(self, symbol: str, interval: int, date: str) -> list[GMOCoinKline]:
         klines: list[GMOCoinKline] = []
-        params = {"symbol": symbol, "interval": interval, "date": date}
+        params = {"symbol": symbol, "interval": self.convert_interval_to_specific(interval), "date": date}
 
         result = self.get(f"{self.http_url}/v1/klines", params)
 
@@ -81,9 +81,10 @@ class GMOCoinClient(BaseClient):
     def convert_executions_to_common_klines(
         symbol: str,
         executions: list[GMOCoinExecution],
-        freq: str = "T",
+        interval: int,
         inclusive: Literal["both", "neither"] = "neither",
     ) -> pd.DataFrame:
+        freq = convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
 
@@ -102,11 +103,24 @@ class GMOCoinClient(BaseClient):
         klines = pd.DataFrame(index=date_range)
         klines["exchange"] = "GMOCoin"
         klines["symbol"] = symbol
-        klines["interval"] = convert_freq_to_interval(freq)
+        klines["interval"] = interval
         klines = klines.join(ohlc).join(volume)
 
         klines = klines.reset_index()
         klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000)
+
+        return klines
+
+    @staticmethod
+    def convert_klines_to_common_klines(symbol: str, gmo_klines: list[GMOCoinKline], interval: int) -> pd.DataFrame:
+        klines = pd.DataFrame(gmo_klines)
+        klines.sort_values(by="openTime", inplace=True)
+
+        klines["exchange"] = "GMOCoin"
+        klines["symbol"] = symbol
+        klines["interval"] = interval
+
+        klines = klines.rename({"openTime": "open_time"}, axis=1)
 
         return klines
 
