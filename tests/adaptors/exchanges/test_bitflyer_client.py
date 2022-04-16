@@ -31,9 +31,11 @@ def test_executions_to_kline():
             sell_child_order_acceptance_id="JRF20220412-142921-012850",
         ),
     ]
+    symbol = client.btc_jpy
+    interval = 60
 
-    klines = client.convert_executions_to_common_klines(executions, inclusive="neither")
+    klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="neither")
     assert len(klines) == 0
 
-    klines = client.convert_executions_to_common_klines(executions, inclusive="both")
+    klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="both")
     assert len(klines) == 1
