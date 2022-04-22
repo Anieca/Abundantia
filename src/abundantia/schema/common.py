@@ -1,3 +1,5 @@
+import pandera as pa
+from pandera.typing import Series
 from pydantic.dataclasses import dataclass
 from sqlalchemy import Column, Float, Integer, String, Table
 
@@ -33,3 +35,18 @@ class CommonKlineModel(CommonKline):
         Column("close", Float),
         Column("volume", Float),
     )
+
+
+class CommonKlineSchema(pa.SchemaModel):
+    exchange: Series[str] = pa.Field(nullable=False)
+    symbol: Series[str] = pa.Field(nullable=False)
+    interval: Series[int] = pa.Field(gt=0, nullable=False)
+    open_time: Series[int] = pa.Field(gt=0, nullable=False)
+    open: Series[float] = pa.Field(gt=0, nullable=False)
+    high: Series[float] = pa.Field(gt=0, nullable=False)
+    low: Series[float] = pa.Field(gt=0, nullable=False)
+    close: Series[float] = pa.Field(gt=0, nullable=False)
+    volume: Series[float] = pa.Field(gt=0, nullable=False)
+
+    class Config:
+        strict = True
