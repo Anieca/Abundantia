@@ -5,7 +5,7 @@ from datetime import datetime
 import pandas as pd
 
 from abundantia.adaptors import BaseClient
-from abundantia.schema.bitflyer import BitFlyerExecution
+from abundantia.schema.bitflyer import BitFlyerExecution, BitFlyerSymbols
 from abundantia.utils import convert_interval_to_freq
 
 
@@ -13,13 +13,11 @@ class BitFlyerClient(BaseClient):
     name: str = "BitFlyer"
     http_url: str = "https://api.bitflyer.com"
     ws_url: str = "wss"
-    fx_btc_jpy: str = "FX_BTC_JPY"
-    btc_jpy: str = "BTC_JPY"
-    symbols: tuple[str, ...] = (btc_jpy, fx_btc_jpy)
+    symbols = BitFlyerSymbols
 
     def get_executions_by_http(
         self,
-        product_code: str,
+        product_code: BitFlyerSymbols,
         before: int | str | None = None,
         after: int | str | None = None,
         count: int = 500,
@@ -28,11 +26,10 @@ class BitFlyerClient(BaseClient):
         """
         before は含まない
         """
-        assert product_code in self.symbols
         count = min(count, max_executions)
 
         all_executions: list[BitFlyerExecution] = []
-        params = {"product_code": product_code, "count": str(count)}
+        params = {"product_code": product_code.name, "count": str(count)}
 
         if before is not None:
             params["before"] = str(before)
@@ -59,7 +56,11 @@ class BitFlyerClient(BaseClient):
         return all_executions
 
     def convert_executions_to_common_klines(
-        self, symbol: str, executions: list[BitFlyerExecution], interval: int, inclusive: str = "neither"
+        self,
+        symbol: BitFlyerSymbols,
+        executions: list[BitFlyerExecution],
+        interval: int,
+        inclusive: str = "neither",
     ) -> pd.DataFrame:
         freq = convert_interval_to_freq(interval)
 
@@ -79,7 +80,7 @@ class BitFlyerClient(BaseClient):
 
         klines = pd.DataFrame(index=date_range)
         klines["exchange"] = self.name
-        klines["symbol"] = symbol
+        klines["symbol"] = symbol.name
         klines["interval"] = interval
         klines = klines.join(ohlc).join(volume)
 
