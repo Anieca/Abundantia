@@ -9,7 +9,7 @@ def test_ingest_duplicate_klines():
     sqlite = SQLiteClient()
 
     interval = 60
-    symbol = GMOCoinClient.btc_jpy
+    symbol = GMOCoinClient.symbols.BTC_JPY
 
     executions = gmo.get_executions_by_http(symbol, max_executions=300)
     klines: pd.DataFrame = gmo.convert_executions_to_common_klines(symbol, executions, interval, inclusive="neither")
@@ -25,7 +25,7 @@ def test_ingest_klines_from_gmocoin_executions():
     sqlite = SQLiteClient()
 
     interval = 60
-    symbol = GMOCoinClient.btc_jpy
+    symbol = GMOCoinClient.symbols.BTC_JPY
 
     executions = gmo.get_executions_by_http(symbol, max_executions=300)
     klines: pd.DataFrame = gmo.convert_executions_to_common_klines(symbol, executions, interval, inclusive="neither")
@@ -40,7 +40,7 @@ def test_ingest_klines_from_gmocoin_klines():
     sqlite = SQLiteClient()
 
     interval = 60
-    symbol = GMOCoinClient.btc_jpy
+    symbol = GMOCoinClient.symbols.BTC_JPY
 
     gmo_klines = gmo.get_klines_by_http(symbol, interval, "20220414")
     klines: pd.DataFrame = gmo.convert_klines_to_common_klines(symbol, gmo_klines, interval)
@@ -55,7 +55,7 @@ def test_ingest_klines_from_bitflyer_executions():
     sqlite = SQLiteClient()
 
     interval = 60
-    symbol = BitFlyerClient.fx_btc_jpy
+    symbol = BitFlyerClient.symbols.FX_BTC_JPY
 
     executions = bitflyer.get_executions_by_http(symbol, max_executions=300)
     klines: pd.DataFrame = bitflyer.convert_executions_to_common_klines(symbol, executions, interval)

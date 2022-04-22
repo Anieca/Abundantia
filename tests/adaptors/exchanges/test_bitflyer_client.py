@@ -6,7 +6,7 @@ client = BitFlyerClient(log_level="WARNING")
 
 def test_get_executions_by_http():
     count = 50
-    executions = client.get_executions_by_http(BitFlyerClient.btc_jpy, max_executions=count)
+    executions = client.get_executions_by_http(BitFlyerClient.symbols.FX_BTC_JPY, max_executions=count)
     assert len(executions) == count
 
 
@@ -31,7 +31,7 @@ def test_executions_to_kline():
             sell_child_order_acceptance_id="JRF20220412-142921-012850",
         ),
     ]
-    symbol = client.btc_jpy
+    symbol = BitFlyerClient.symbols.FX_BTC_JPY
     interval = 60
 
     klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="neither")
