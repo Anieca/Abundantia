@@ -3,9 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 
 import pandas as pd
+import pandera as pa
+from pandera.typing import DataFrame
 
 from abundantia.adaptors import BaseClient
 from abundantia.schema.bitflyer import BitFlyerExecution, BitFlyerSymbols
+from abundantia.schema.common import CommonKlineSchema
 from abundantia.utils import convert_interval_to_freq
 
 
@@ -55,18 +58,19 @@ class BitFlyerClient(BaseClient):
 
         return all_executions
 
+    @pa.check_types
     def convert_executions_to_common_klines(
         self,
         symbol: BitFlyerSymbols,
         executions: list[BitFlyerExecution],
         interval: int,
         inclusive: str = "neither",
-    ) -> pd.DataFrame:
+    ) -> DataFrame[CommonKlineSchema]:
         freq = convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
 
-        df["time"] = pd.to_datetime(df["exec_date"])
+        df["time"] = pd.to_datetime(df["exec_date"], utc=True)
         df.set_index("time", inplace=True)
         df.sort_index(inplace=True)
 
@@ -85,6 +89,5 @@ class BitFlyerClient(BaseClient):
         klines = klines.join(ohlc).join(volume)
 
         klines = klines.reset_index()
-        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000)
-
+        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000).astype(int)
         return klines
