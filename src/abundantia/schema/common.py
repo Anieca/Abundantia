@@ -42,11 +42,11 @@ class CommonKlineSchema(pa.SchemaModel):
     symbol: Series[str] = pa.Field(nullable=False)
     interval: Series[int] = pa.Field(gt=0, nullable=False)
     open_time: Series[int] = pa.Field(gt=0, nullable=False)
-    open: Series[float] = pa.Field(gt=0, nullable=False)
-    high: Series[float] = pa.Field(gt=0, nullable=False)
-    low: Series[float] = pa.Field(gt=0, nullable=False)
-    close: Series[float] = pa.Field(gt=0, nullable=False)
-    volume: Series[float] = pa.Field(gt=0, nullable=False)
+    open: Series[float] = pa.Field(gt=0)
+    high: Series[float] = pa.Field(gt=0)
+    low: Series[float] = pa.Field(gt=0)
+    close: Series[float] = pa.Field(gt=0)
+    volume: Series[float] = pa.Field(gt=0)
 
     class Config:
         strict = True
