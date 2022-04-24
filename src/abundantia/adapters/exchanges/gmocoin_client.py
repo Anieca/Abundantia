@@ -3,8 +3,11 @@ from time import sleep
 from typing import Literal
 
 import pandas as pd
+import pandera as pa
+from pandera.typing import DataFrame
 
 from abundantia.adaptors import BaseClient
+from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
 from abundantia.utils import convert_interval_to_freq
 
@@ -75,13 +78,14 @@ class GMOCoinClient(BaseClient):
 
         return all_executions
 
+    @pa.check_types
     def convert_executions_to_common_klines(
         self,
         symbol: GMOCoinSymbols,
         executions: list[GMOCoinExecution],
         interval: int,
         inclusive: Literal["both", "neither"] = "neither",
-    ) -> pd.DataFrame:
+    ) -> DataFrame[CommonKlineSchema]:
         freq = convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
@@ -105,10 +109,11 @@ class GMOCoinClient(BaseClient):
         klines = klines.join(ohlc).join(volume)
 
         klines = klines.reset_index()
-        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000)
+        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000).astype(int)
 
         return klines
 
+    @pa.check_types
     def convert_klines_to_common_klines(
         self, symbol: GMOCoinSymbols, gmo_klines: list[GMOCoinKline], interval: int
     ) -> pd.DataFrame:
