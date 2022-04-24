@@ -6,7 +6,7 @@ import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.adaptors import BaseClient
+from abundantia.adapters import BaseClient
 from abundantia.schema.bitflyer import BitFlyerExecution, BitFlyerSymbols
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.utils import convert_interval_to_freq
