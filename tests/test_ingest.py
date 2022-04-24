@@ -1,7 +1,7 @@
 import pandas as pd
 
-from abundantia.adaptors import GMOCoinClient, SQLiteClient
-from abundantia.adaptors.exchanges.bitflyer_client import BitFlyerClient
+from abundantia.adapters import GMOCoinClient, SQLiteClient
+from abundantia.adapters.exchanges.bitflyer_client import BitFlyerClient
 
 
 def test_ingest_duplicate_klines():
