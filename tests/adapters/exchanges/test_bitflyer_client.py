@@ -1,4 +1,4 @@
-from abundantia.adaptors import BitFlyerClient
+from abundantia.adapters import BitFlyerClient
 from abundantia.schema.bitflyer import BitFlyerExecution
 
 client = BitFlyerClient(log_level="WARNING")

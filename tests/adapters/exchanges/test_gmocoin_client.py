@@ -1,4 +1,4 @@
-from abundantia.adaptors import GMOCoinClient
+from abundantia.adapters import GMOCoinClient
 from abundantia.schema.gmocoin import GMOCoinExecution
 
 client = GMOCoinClient(log_level="WARNING")

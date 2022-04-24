@@ -1,4 +1,4 @@
-from abundantia.adaptors.databases.sqlite_client import SQLiteClient
+from abundantia.adapters import SQLiteClient
 from abundantia.schema.common import CommonKlineModel
 
 
