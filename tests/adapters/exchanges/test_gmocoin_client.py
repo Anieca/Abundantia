@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from abundantia.adapters import GMOCoinClient
 from abundantia.schema.gmocoin import GMOCoinExecution
 
@@ -28,3 +30,8 @@ def test_convert_executions_to_common_klines():
 
     klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="both")
     assert len(klines) == 1
+
+
+def test_convert_datetime_to_specific():
+    assert "20220101" == GMOCoinClient.convert_datetime_to_specific(datetime(2022, 1, 1))
+    assert "20220101" == GMOCoinClient.convert_datetime_to_specific(datetime(2022, 1, 1, 1, 1, 1))
