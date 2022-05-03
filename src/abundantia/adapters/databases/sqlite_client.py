@@ -1,14 +1,15 @@
 import traceback
 
-import pandas as pd
+import pandera as pa
 import sqlalchemy
+from pandera.typing import DataFrame
 from sqlalchemy import insert
 from sqlalchemy.engine.row import Row
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from abundantia.adapters import mapper_registry
-from abundantia.schema.common import CommonKlineModel
+from abundantia.schema.common import CommonKlineModel, CommonKlineSchema
 from abundantia.utils import setup_logger
 
 
@@ -23,7 +24,8 @@ class SQLiteClient:
     def drop_common_kline_table(self) -> None:
         CommonKlineModel.__table__.drop(bind=self.engine)
 
-    def insert_common_klines(self, klines: pd.DataFrame) -> None:
+    @pa.check_types
+    def insert_common_klines(self, klines: DataFrame[CommonKlineSchema]) -> None:
         duplicates = 0
         with Session(self.engine) as sess:
             for kline in klines.to_dict("records"):

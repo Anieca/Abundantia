@@ -32,9 +32,13 @@ class GMOCoinClient(BaseClient):
         604800: "1week",
     }
 
-    def get_klines_by_http(self, symbol: GMOCoinSymbols, interval: int, date: str) -> list[GMOCoinKline]:
+    def get_klines_by_http(self, symbol: GMOCoinSymbols, interval: int, date: datetime) -> list[GMOCoinKline]:
         klines: list[GMOCoinKline] = []
-        params = {"symbol": symbol.name, "interval": self.convert_interval_to_specific(interval), "date": date}
+        params = {
+            "symbol": symbol.name,
+            "interval": self.convert_interval_to_specific(interval),
+            "date": self.convert_datetime_to_specific(date),
+        }
 
         result = self.get(f"{self.http_url}/v1/klines", params)
 
@@ -82,8 +86,8 @@ class GMOCoinClient(BaseClient):
     def convert_executions_to_common_klines(
         self,
         symbol: GMOCoinSymbols,
-        executions: list[GMOCoinExecution],
         interval: int,
+        executions: list[GMOCoinExecution],
         inclusive: Literal["both", "neither"] = "neither",
     ) -> DataFrame[CommonKlineSchema]:
         freq = convert_interval_to_freq(interval)
@@ -115,8 +119,8 @@ class GMOCoinClient(BaseClient):
 
     @pa.check_types
     def convert_klines_to_common_klines(
-        self, symbol: GMOCoinSymbols, gmo_klines: list[GMOCoinKline], interval: int
-    ) -> pd.DataFrame:
+        self, symbol: GMOCoinSymbols, interval: int, gmo_klines: list[GMOCoinKline]
+    ) -> DataFrame[CommonKlineSchema]:
         klines = pd.DataFrame(gmo_klines)
         klines.sort_values(by="openTime", inplace=True)
 
@@ -131,3 +135,7 @@ class GMOCoinClient(BaseClient):
     @classmethod
     def convert_interval_to_specific(cls, interval: int) -> str:
         return cls.INTERVALS[interval]
+
+    @classmethod
+    def convert_datetime_to_specific(cls, date: datetime) -> str:
+        return datetime.strftime(date, "%Y%m%d")

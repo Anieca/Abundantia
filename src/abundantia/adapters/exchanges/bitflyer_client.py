@@ -62,8 +62,8 @@ class BitFlyerClient(BaseClient):
     def convert_executions_to_common_klines(
         self,
         symbol: BitFlyerSymbols,
-        executions: list[BitFlyerExecution],
         interval: int,
+        executions: list[BitFlyerExecution],
         inclusive: str = "neither",
     ) -> DataFrame[CommonKlineSchema]:
         freq = convert_interval_to_freq(interval)
