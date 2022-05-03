@@ -34,8 +34,8 @@ def test_executions_to_kline():
     symbol = BitFlyerClient.symbols.FX_BTC_JPY
     interval = 60
 
-    klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="neither")
+    klines = client.convert_executions_to_common_klines(symbol, interval, executions, inclusive="neither")
     assert len(klines) == 0
 
-    klines = client.convert_executions_to_common_klines(symbol, executions, interval, inclusive="both")
+    klines = client.convert_executions_to_common_klines(symbol, interval, executions, inclusive="both")
     assert len(klines) == 1
