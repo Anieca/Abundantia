@@ -5,11 +5,8 @@ from abundantia.adapters import GMOCoinClient, SQLiteClient
 from abundantia.schema.gmocoin import GMOCoinSymbols
 
 
-def ingest_klines_from_gmocoin_klines(
-    symbol: GMOCoinSymbols,
-    interval: int,
-    start_date: datetime,
-    end_date: datetime,
+def ingest_gmocoin_klines_to_sqlite(
+    symbol: GMOCoinSymbols, interval: int, start_date: datetime, end_date: datetime
 ) -> None:
 
     gmo = GMOCoinClient()
