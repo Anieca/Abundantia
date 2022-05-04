@@ -1,9 +1,12 @@
+import pytest
+
 from abundantia.adapters import BitFlyerClient
 from abundantia.schema.bitflyer import BitFlyerExecution
 
 client = BitFlyerClient(log_level="WARNING")
 
 
+@pytest.mark.integration
 def test_get_executions_by_http():
     count = 50
     executions = client.get_executions_by_http(BitFlyerClient.symbols.FX_BTC_JPY, max_executions=count)
