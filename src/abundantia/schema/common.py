@@ -3,7 +3,7 @@ from pandera.typing import Series
 from pydantic.dataclasses import dataclass
 from sqlalchemy import Column, Float, Integer, String, Table
 
-from abundantia.adapters import mapper_registry
+from abundantia.adapters.databases.mapper import mapper_registry
 
 
 @dataclass
