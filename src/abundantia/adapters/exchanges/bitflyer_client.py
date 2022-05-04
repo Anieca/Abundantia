@@ -91,3 +91,8 @@ class BitFlyerClient(BaseClient):
         klines = klines.reset_index()
         klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000).astype(int)
         return klines
+
+    def get_klines(
+        self, symbol: BitFlyerSymbols, interval: int, start_date: datetime, end_date: datetime
+    ) -> DataFrame[CommonKlineSchema]:
+        return super().get_klines(symbol, interval, start_date, end_date)
