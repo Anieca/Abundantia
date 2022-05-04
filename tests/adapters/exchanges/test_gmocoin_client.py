@@ -1,16 +1,20 @@
 from datetime import datetime
 
+import pytest
+
 from abundantia.adapters import GMOCoinClient
 from abundantia.schema.gmocoin import GMOCoinExecution
 
 client = GMOCoinClient(log_level="WARNING")
 
 
+@pytest.mark.integration
 def test_get_klines_by_http():
     klines = client.get_klines_by_http(GMOCoinClient.symbols.BTC_JPY, 60, datetime(2021, 4, 15))
     assert len(klines) == 60 * 24
 
 
+@pytest.mark.integration
 def test_get_executions_by_http():
     count = 50
     executions = client.get_executions_by_http(GMOCoinClient.symbols.BTC_JPY, max_executions=count)

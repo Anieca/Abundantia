@@ -1,4 +1,5 @@
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 from time import sleep
 from typing import Literal
 
@@ -139,3 +140,25 @@ class GMOCoinClient(BaseClient):
     @classmethod
     def convert_datetime_to_specific(cls, date: datetime) -> str:
         return datetime.strftime(date, "%Y%m%d")
+
+    def get_klines(
+        self, symbol: GMOCoinSymbols, interval: int, start_date: datetime, end_date: datetime
+    ) -> DataFrame[CommonKlineSchema]:
+
+        if interval < min(self.INTERVALS):
+            self.logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
+            raise ValueError
+
+        if start_date < datetime(2021, 4, 15):
+            self.logger.error(f"{start_date} is too small. mininum is {datetime(2021, 4, 15)}")
+            raise ValueError
+
+        date = start_date
+        gmo_klines = []
+        while date < end_date:
+            gmo_klines += self.get_klines_by_http(symbol, interval, date)
+            date += timedelta(days=1)
+            time.sleep(1)
+
+        klines = self.convert_klines_to_common_klines(symbol, interval, gmo_klines)
+        return klines
