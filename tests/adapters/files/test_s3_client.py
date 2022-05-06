@@ -71,3 +71,4 @@ def test_dump_and_load():
     loaded_klines = client.load("test.csv")
 
     assert klines.loc[0, "open_time"] == loaded_klines.loc[0, "open_time"]
+    assert klines.loc[0, "volume"] == loaded_klines.loc[0, "volume"]
