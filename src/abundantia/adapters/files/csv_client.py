@@ -15,4 +15,4 @@ class CSVClient:
 
     @classmethod
     def load(cls, filename: str, **kwargs: Any) -> pd.DataFrame:
-        return pd.read_csv(filename)
+        return pd.read_csv(filename, **kwargs)
