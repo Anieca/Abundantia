@@ -1,12 +1,9 @@
 import pandera as pa
 from pandera.typing import Series
 from pydantic.dataclasses import dataclass
-from sqlalchemy import Column, Float, Integer, String, Table
-
-from abundantia.adapters.databases.mapper import mapper_registry
 
 
-@dataclass
+@dataclass(frozen=True)
 class CommonKline:
     exchange: str
     symbol: str
@@ -19,34 +16,16 @@ class CommonKline:
     volume: float
 
 
-@mapper_registry.mapped
-class CommonKlineModel(CommonKline):
-
-    __table__ = Table(
-        "common_kline",
-        mapper_registry.metadata,
-        Column("exchange", String(128), primary_key=True),
-        Column("symbol", String(128), primary_key=True),
-        Column("interval", Integer, primary_key=True),
-        Column("open_time", Integer, primary_key=True),
-        Column("open", Float),
-        Column("high", Float),
-        Column("low", Float),
-        Column("close", Float),
-        Column("volume", Float),
-    )
-
-
 class CommonKlineSchema(pa.SchemaModel):
     exchange: Series[str] = pa.Field(nullable=False)
     symbol: Series[str] = pa.Field(nullable=False)
     interval: Series[int] = pa.Field(gt=0, nullable=False)
     open_time: Series[int] = pa.Field(gt=0, nullable=False)
-    open: Series[float] = pa.Field(gt=0)
-    high: Series[float] = pa.Field(gt=0)
-    low: Series[float] = pa.Field(gt=0)
-    close: Series[float] = pa.Field(gt=0)
-    volume: Series[float] = pa.Field(gt=0)
+    open: Series[float] = pa.Field(nullable=True)
+    high: Series[float] = pa.Field(nullable=True)
+    low: Series[float] = pa.Field(nullable=True)
+    close: Series[float] = pa.Field(nullable=True)
+    volume: Series[float] = pa.Field(nullable=True)
 
     class Config:
         strict = True

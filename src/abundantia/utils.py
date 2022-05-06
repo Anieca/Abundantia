@@ -14,7 +14,7 @@ def setup_logger(name: str, level: str = "DEBUG", logfile_path: str | None = Non
     if logfile_path is not None:
         handlers.append(logging.FileHandler(logfile_path))
 
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s:%(lineno)s - %(message)s")
 
     for handler in handlers:
         handler.setLevel(getattr(logging, level, logging.NOTSET))

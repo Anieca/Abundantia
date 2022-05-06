@@ -1,6 +1,6 @@
 import pytest
 
-from abundantia.adapters import BitFlyerClient
+from abundantia.adapters.exchanges.bitflyer_client import BitFlyerClient
 from abundantia.schema.bitflyer import BitFlyerExecution
 
 
@@ -35,6 +35,24 @@ class TestBitflyerClient:
                 buy_child_order_acceptance_id="JRF20220412-142921-030158",
                 sell_child_order_acceptance_id="JRF20220412-142921-012850",
             ),
+            BitFlyerExecution(
+                id=2325998349,
+                side="BUY",
+                price=4994425.0,
+                size=0.02,
+                exec_date="2022-04-12T14:29:02.087",
+                buy_child_order_acceptance_id="JRF20220412-142921-030158",
+                sell_child_order_acceptance_id="JRF20220412-142921-012850",
+            ),
+            BitFlyerExecution(
+                id=2325998348,
+                side="BUY",
+                price=4994415.0,
+                size=0.02,
+                exec_date="2022-04-12T14:28:52.087",
+                buy_child_order_acceptance_id="JRF20220412-142921-030158",
+                sell_child_order_acceptance_id="JRF20220412-142921-012850",
+            ),
         ]
         symbol = BitFlyerClient.symbols.FX_BTC_JPY
         interval = 60
@@ -43,4 +61,4 @@ class TestBitflyerClient:
         assert len(klines) == 0
 
         klines = self.client.convert_executions_to_common_klines(symbol, interval, executions, inclusive="both")
-        assert len(klines) == 1
+        assert len(klines) == 2
