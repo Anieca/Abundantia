@@ -46,6 +46,10 @@ class GMOCoinClient(BaseClient):
         if result is None:
             return klines
 
+        if result.get("status") != 0:
+            self.logger.error(result)
+            return klines
+
         klines = [GMOCoinKline(**d) for d in result.get("data", [])]
         return klines
 
@@ -62,6 +66,10 @@ class GMOCoinClient(BaseClient):
             result = self.get(f"{self.http_url}/v1/trades", params=params)
 
             if result is None:
+                break
+
+            if result.get("status") != 0:
+                self.logger.error(result)
                 break
 
             data = result.get("data", {})
