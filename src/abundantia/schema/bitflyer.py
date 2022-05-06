@@ -7,7 +7,7 @@ from pydantic.dataclasses import dataclass
 @dataclass
 class BitFlyerExecution:
     id: int
-    side: Literal["SELL", "BUY"]
+    side: Literal["SELL", "BUY", ""]
     price: float
     size: float
     exec_date: str
