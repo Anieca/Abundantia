@@ -1,6 +1,6 @@
 import pytest
 
-from abundantia.adapters import BitFlyerClient
+from abundantia.adapters.exchanges.bitflyer_client import BitFlyerClient
 from abundantia.schema.bitflyer import BitFlyerExecution
 
 
