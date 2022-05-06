@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic.dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class BitFlyerExecution:
     id: int
     side: Literal["SELL", "BUY", ""]
@@ -17,4 +17,10 @@ class BitFlyerExecution:
 
 class BitFlyerSymbols(Enum):
     BTC_JPY = auto()
+    XRP_JPY = auto()
+    ETH_JPY = auto()
+    XLM_JPY = auto()
+    MONA_JPY = auto()
+    ETH_BTC = auto()
+    BCH_BTC = auto()
     FX_BTC_JPY = auto()

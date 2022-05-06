@@ -14,10 +14,11 @@ from abundantia.utils import setup_logger
 
 
 class BaseClient(metaclass=ABCMeta):
+    tz = gettz()
+
     def __init__(self, duration: int = 1, log_level: str = "DEBUG") -> None:
         self.duration = duration
         self.logger = setup_logger(self.__class__.__name__, log_level)
-        self.tz = gettz()
 
     def get(self, url: str, params: dict[str, Any]) -> Any | None:
         self.logger.info(params)
