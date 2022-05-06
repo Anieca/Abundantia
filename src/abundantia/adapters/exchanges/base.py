@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 import requests
+from dateutil.tz import gettz
 from pandera.typing import DataFrame
 
 from abundantia.schema import CommonKlineSchema
@@ -13,8 +14,10 @@ from abundantia.utils import setup_logger
 
 
 class BaseClient(metaclass=ABCMeta):
-    def __init__(self, log_level: str = "DEBUG") -> None:
-        self.logger = setup_logger(__name__, log_level)
+    def __init__(self, duration: int = 1, log_level: str = "DEBUG") -> None:
+        self.duration = duration
+        self.logger = setup_logger(self.__class__.__name__, log_level)
+        self.tz = gettz()
 
     def get(self, url: str, params: dict[str, str]) -> Any | None:
         self.logger.info(params)
