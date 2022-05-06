@@ -47,6 +47,10 @@ class BitFlyerClient(BaseClient):
             if result is None:
                 break
 
+            if not isinstance(result, list):
+                self.logger.error(result)
+                break
+
             executions = result
             all_executions += [BitFlyerExecution(**e) for e in executions]
 
@@ -114,12 +118,16 @@ class BitFlyerClient(BaseClient):
         current_ts = end_date.replace(tzinfo=self.tz).timestamp() * 1000
 
         before = None
+        max_executions = 500
 
         executions: list[BitFlyerExecution] = []
         while current_ts > start_ts:
             self.logger.info(f"{current_ts} {start_ts} {len(executions)}")
-            executions_chunk = self.get_executions_by_http(symbol, before=before)
+            executions_chunk = self.get_executions_by_http(symbol, before=before, max_executions=max_executions)
             executions += executions_chunk
+
+            if len(executions_chunk) != max_executions:
+                break
 
             oldest_execution = executions_chunk[-1]
             before = oldest_execution.id
