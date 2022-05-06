@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
+import pandas as pd
 import requests
 from dateutil.tz import gettz
 from pandera.typing import DataFrame
 
-from abundantia.schema import CommonKlineSchema
+from abundantia.schema.common import CommonKlineSchema
 from abundantia.utils import setup_logger
 
 
@@ -35,3 +36,9 @@ class BaseClient(metaclass=ABCMeta):
         self, symbol: Any, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
         pass
+
+    @staticmethod
+    def get_date_range(time_index: pd.Index, freq: str, inclusive: Literal["both", "neither"]) -> pd.DatetimeIndex:
+        start: pd.Timestamp = time_index.min().floor(freq=freq)
+        end: pd.Timestamp = time_index.max().floor(freq=freq)
+        return pd.date_range(start, end, name="open_time", freq=freq, inclusive=inclusive)

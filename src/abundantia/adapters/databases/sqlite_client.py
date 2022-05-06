@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from abundantia.adapters.databases.mapper import mapper_registry
-from abundantia.schema import CommonKlineSchema
+from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.model import CommonKlineModel
 from abundantia.utils import setup_logger
 

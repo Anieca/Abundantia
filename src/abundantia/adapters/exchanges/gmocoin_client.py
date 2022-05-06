@@ -6,8 +6,9 @@ import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.adapters import BaseClient
-from abundantia.schema import CommonKlineSchema, GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
+from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.schema.common import CommonKlineSchema
+from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
 from abundantia.utils import convert_interval_to_freq
 
 
@@ -89,9 +90,10 @@ class GMOCoinClient(BaseClient):
 
         return all_executions
 
+    @classmethod
     @pa.check_types
     def convert_executions_to_common_klines(
-        self,
+        cls,
         symbol: GMOCoinSymbols,
         interval: int,
         executions: list[GMOCoinExecution],
@@ -105,23 +107,20 @@ class GMOCoinClient(BaseClient):
         df.set_index("time", inplace=True)
         df.sort_index(inplace=True)
 
-        start: pd.Timestamp = df.index.min().floor(freq=freq)
-        end: pd.Timestamp = df.index.max().floor(freq=freq)
-        date_range = pd.date_range(start, end, name="open_time", freq=freq, inclusive=inclusive)
+        date_range = cls.get_date_range(df.index, freq, inclusive)
 
         group = df.resample(freq)
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
 
         klines = pd.DataFrame(index=date_range)
-        klines["exchange"] = self.name
+        klines["exchange"] = cls.name
         klines["symbol"] = symbol.name
         klines["interval"] = interval
         klines = klines.join(ohlc).join(volume)
 
         klines = klines.reset_index()
         klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000).astype(int)
-
         return klines
 
     @pa.check_types
@@ -136,7 +135,6 @@ class GMOCoinClient(BaseClient):
         klines["interval"] = interval
 
         klines = klines.rename({"openTime": "open_time"}, axis=1)
-
         return klines
 
     @classmethod

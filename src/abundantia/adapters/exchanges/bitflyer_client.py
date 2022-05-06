@@ -8,8 +8,9 @@ import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.adapters import BaseClient
-from abundantia.schema import BitFlyerExecution, BitFlyerSymbols, CommonKlineSchema
+from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.schema.bitflyer import BitFlyerExecution, BitFlyerSymbols
+from abundantia.schema.common import CommonKlineSchema
 from abundantia.utils import convert_interval_to_freq
 
 
@@ -41,7 +42,6 @@ class BitFlyerClient(BaseClient):
             params["after"] = str(after)
 
         while len(all_executions) < max_executions:
-
             result = self.get(f"{self.http_url}/v1/executions", params=params)
 
             if result is None:
@@ -60,9 +60,10 @@ class BitFlyerClient(BaseClient):
 
         return all_executions
 
+    @classmethod
     @pa.check_types
     def convert_executions_to_common_klines(
-        self,
+        cls,
         symbol: BitFlyerSymbols,
         interval: int,
         executions: list[BitFlyerExecution],
@@ -76,16 +77,14 @@ class BitFlyerClient(BaseClient):
         df.set_index("time", inplace=True)
         df.sort_index(inplace=True)
 
-        start: pd.Timestamp = df.index.min().floor(freq=freq)
-        end: pd.Timestamp = df.index.max().floor(freq=freq)
-        date_range = pd.date_range(start, end, name="open_time", freq=freq, inclusive=inclusive)
+        date_range = cls.get_date_range(df.index, freq, inclusive)
 
         group = df.resample(freq)
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
 
         klines = pd.DataFrame(index=date_range)
-        klines["exchange"] = self.name
+        klines["exchange"] = cls.name
         klines["symbol"] = symbol.name
         klines["interval"] = interval
         klines = klines.join(ohlc).join(volume)
