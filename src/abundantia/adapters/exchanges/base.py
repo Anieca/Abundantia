@@ -1,22 +1,26 @@
 from __future__ import annotations
 
-import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
+import pandas as pd
 import requests
+from dateutil.tz import gettz
 from pandera.typing import DataFrame
 
-from abundantia.schema import CommonKlineSchema
+from abundantia.schema.common import CommonKlineSchema
 from abundantia.utils import setup_logger
 
 
 class BaseClient(metaclass=ABCMeta):
-    def __init__(self, log_level: str = "DEBUG") -> None:
-        self.logger = setup_logger(__name__, log_level)
+    tz = gettz()
 
-    def get(self, url: str, params: dict[str, str]) -> Any | None:
+    def __init__(self, duration: int = 1, log_level: str = "DEBUG") -> None:
+        self.duration = duration
+        self.logger = setup_logger(self.__class__.__name__, log_level)
+
+    def get(self, url: str, params: dict[str, Any]) -> Any | None:
         self.logger.info(params)
         result: Any | None = None
 
@@ -24,7 +28,7 @@ class BaseClient(metaclass=ABCMeta):
             response = requests.get(url, params=params)
             result = response.json()
         except Exception:
-            self.logger.error(traceback.format_exc())
+            self.logger.exception("requests error.")
 
         return result
 
@@ -33,3 +37,9 @@ class BaseClient(metaclass=ABCMeta):
         self, symbol: Any, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
         pass
+
+    @staticmethod
+    def get_date_range(time_index: pd.Index, freq: str, inclusive: Literal["both", "neither"]) -> pd.DatetimeIndex:
+        start: pd.Timestamp = time_index.min().floor(freq=freq)
+        end: pd.Timestamp = time_index.max().floor(freq=freq)
+        return pd.date_range(start, end, name="open_time", freq=freq, inclusive=inclusive)

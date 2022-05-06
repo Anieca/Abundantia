@@ -1,8 +1,9 @@
 import pandas as pd
 import pytest
 
-from abundantia.adapters import GMOCoinClient, SQLiteClient
+from abundantia.adapters.databases.sqlite_client import SQLiteClient
 from abundantia.adapters.exchanges.bitflyer_client import BitFlyerClient
+from abundantia.adapters.exchanges.gmocoin_client import GMOCoinClient
 
 
 @pytest.mark.integration

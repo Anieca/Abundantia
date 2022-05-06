@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic.dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class GMOCoinExecution:
     price: float
     side: Literal["SELL", "BUY"]
@@ -12,7 +12,7 @@ class GMOCoinExecution:
     timestamp: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class GMOCoinKline:
     openTime: int
     open: float

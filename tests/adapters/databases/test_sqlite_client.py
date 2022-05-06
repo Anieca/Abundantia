@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from abundantia.adapters import SQLiteClient
-from abundantia.schema.common import CommonKlineModel
+from abundantia.adapters.databases.sqlite_client import SQLiteClient
+from abundantia.schema.model import CommonKlineModel
 
 
 @pytest.mark.database
