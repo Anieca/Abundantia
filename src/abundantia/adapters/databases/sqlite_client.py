@@ -1,5 +1,3 @@
-import traceback
-
 import pandera as pa
 import sqlalchemy
 from pandera.typing import DataFrame
@@ -36,7 +34,7 @@ class SQLiteClient:
                 except IntegrityError:
                     duplicates += 1
                 except Exception:
-                    self.logger.error(traceback.format_exc())
+                    self.logger.exception("Insertion error.")
             sess.commit()
 
         if duplicates > 0:

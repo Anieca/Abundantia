@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from typing import Any
@@ -19,7 +18,7 @@ class BaseClient(metaclass=ABCMeta):
         self.logger = setup_logger(self.__class__.__name__, log_level)
         self.tz = gettz()
 
-    def get(self, url: str, params: dict[str, str]) -> Any | None:
+    def get(self, url: str, params: dict[str, Any]) -> Any | None:
         self.logger.info(params)
         result: Any | None = None
 
@@ -27,7 +26,7 @@ class BaseClient(metaclass=ABCMeta):
             response = requests.get(url, params=params)
             result = response.json()
         except Exception:
-            self.logger.error(traceback.format_exc())
+            self.logger.exception("requests error.")
 
         return result
 
