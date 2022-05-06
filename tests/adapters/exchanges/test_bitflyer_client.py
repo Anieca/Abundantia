@@ -33,6 +33,24 @@ def test_executions_to_kline():
             buy_child_order_acceptance_id="JRF20220412-142921-030158",
             sell_child_order_acceptance_id="JRF20220412-142921-012850",
         ),
+        BitFlyerExecution(
+            id=2325998349,
+            side="BUY",
+            price=4994425.0,
+            size=0.02,
+            exec_date="2022-04-12T14:29:02.087",
+            buy_child_order_acceptance_id="JRF20220412-142921-030158",
+            sell_child_order_acceptance_id="JRF20220412-142921-012850",
+        ),
+        BitFlyerExecution(
+            id=2325998348,
+            side="BUY",
+            price=4994415.0,
+            size=0.02,
+            exec_date="2022-04-12T14:28:52.087",
+            buy_child_order_acceptance_id="JRF20220412-142921-030158",
+            sell_child_order_acceptance_id="JRF20220412-142921-012850",
+        ),
     ]
     symbol = BitFlyerClient.symbols.FX_BTC_JPY
     interval = 60
@@ -41,4 +59,4 @@ def test_executions_to_kline():
     assert len(klines) == 0
 
     klines = client.convert_executions_to_common_klines(symbol, interval, executions, inclusive="both")
-    assert len(klines) == 1
+    assert len(klines) == 2
