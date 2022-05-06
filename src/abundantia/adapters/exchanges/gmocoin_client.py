@@ -1,6 +1,5 @@
 import time
 from datetime import datetime, timedelta
-from time import sleep
 from typing import Literal
 
 import pandas as pd
@@ -8,8 +7,7 @@ import pandera as pa
 from pandera.typing import DataFrame
 
 from abundantia.adapters import BaseClient
-from abundantia.schema.common import CommonKlineSchema
-from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
+from abundantia.schema import CommonKlineSchema, GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
 from abundantia.utils import convert_interval_to_freq
 
 
@@ -54,7 +52,7 @@ class GMOCoinClient(BaseClient):
         return klines
 
     def get_executions_by_http(
-        self, symbol: GMOCoinSymbols, page: int = 1, count: int = 100, max_executions: int = 100_000
+        self, symbol: GMOCoinSymbols, page: int = 1, count: int = 100, max_executions: int = 500
     ) -> list[GMOCoinExecution]:
 
         count = min(count, max_executions)
@@ -87,7 +85,7 @@ class GMOCoinClient(BaseClient):
 
             params["page"] = str(current_page + 1)
             self.logger.info(f"{all_executions[0].timestamp}, {all_executions[-1].timestamp}, {len(all_executions)}")
-            sleep(1)
+            time.sleep(self.duration)
 
         return all_executions
 
@@ -97,7 +95,7 @@ class GMOCoinClient(BaseClient):
         symbol: GMOCoinSymbols,
         interval: int,
         executions: list[GMOCoinExecution],
-        inclusive: Literal["both", "neither"] = "neither",
+        inclusive: Literal["both", "neither"] = "both",
     ) -> DataFrame[CommonKlineSchema]:
         freq = convert_interval_to_freq(interval)
 
@@ -107,8 +105,8 @@ class GMOCoinClient(BaseClient):
         df.set_index("time", inplace=True)
         df.sort_index(inplace=True)
 
-        start: pd.Timestamp = df.index.min().round(freq=freq)
-        end: pd.Timestamp = df.index.max().round(freq=freq)
+        start: pd.Timestamp = df.index.min().floor(freq=freq)
+        end: pd.Timestamp = df.index.max().floor(freq=freq)
         date_range = pd.date_range(start, end, name="open_time", freq=freq, inclusive=inclusive)
 
         group = df.resample(freq)
@@ -166,7 +164,7 @@ class GMOCoinClient(BaseClient):
         while date < end_date:
             gmo_klines += self.get_klines_by_http(symbol, interval, date)
             date += timedelta(days=1)
-            time.sleep(1)
+            time.sleep(self.duration)
 
         klines = self.convert_klines_to_common_klines(symbol, interval, gmo_klines)
         return klines
