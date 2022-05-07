@@ -101,7 +101,7 @@ class BybitInversePerpetualClient(BaseClient):
                 break
 
             *_, latest_kline = klines_chunk
-            date = datetime.fromtimestamp(latest_kline.open_time)
+            date = datetime.fromtimestamp(latest_kline.open_time + interval)
             time.sleep(self.duration)
 
         klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, bybit_klines)
