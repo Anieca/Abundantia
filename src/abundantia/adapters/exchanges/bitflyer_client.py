@@ -130,7 +130,7 @@ class BitFlyerClient(BaseClient):
             if len(executions_chunk) != max_executions:
                 break
 
-            oldest_execution = executions_chunk[-1]
+            *_, oldest_execution = executions_chunk
             before = oldest_execution.id
             current_ts = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.tz).timestamp() * 1000
             time.sleep(1)
