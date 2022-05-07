@@ -19,27 +19,44 @@ class TestBybitInversePerpetualClient:
         bybit_klines = [
             BybitKline(
                 symbol="BTCUSD",
-                interval="D",
-                open_time=1651795200,
-                open=36511.0,
-                high=36649.0,
-                low=35204.5,
-                close=35992.0,
-                volume=2096797281.0,
-                turnover=58289.36510664,
+                interval="1",
+                open_time=1651676400,
+                open=38773.0,
+                high=38789.0,
+                low=38773.0,
+                close=38779.5,
+                volume=181631.0,
+                turnover=4.68411369,
             ),
             BybitKline(
                 symbol="BTCUSD",
-                interval="D",
-                open_time=1651881600,
-                open=35992.0,
-                high=36044.5,
-                low=35714.0,
-                close=35762.0,
-                volume=83123018.0,
-                turnover=2316.31668545,
+                interval="1",
+                open_time=1651676460,
+                open=38779.5,
+                high=38798.5,
+                low=38777.5,
+                close=38798.5,
+                volume=82025.0,
+                turnover=2.11500075,
+            ),
+            BybitKline(
+                symbol="BTCUSD",
+                interval="1",
+                open_time=1651676520,
+                open=38798.5,
+                high=38798.5,
+                low=38750.0,
+                close=38764.5,
+                volume=540133.0,
+                turnover=13.92999025,
             ),
         ]
 
-        klines = self.client.convert_klines_to_common_klines(bybit_klines)
-        assert len(klines) == len(bybit_klines)
+        symbol = self.client.symbols.BTCUSD
+        interval = 60
+        start_date = datetime(2022, 5, 5)
+        end_date = datetime(2022, 5, 6)
+        klines = self.client.convert_klines_to_common_klines(symbol, interval, start_date, end_date, bybit_klines)
+
+        assert len(klines) == 1440
+        assert len(klines.dropna()) == len(bybit_klines)
