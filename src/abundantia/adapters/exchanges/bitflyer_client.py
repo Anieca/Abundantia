@@ -76,6 +76,7 @@ class BitFlyerClient(BaseClient):
         freq = convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
+        df = df.sort_values(by="id")
 
         df["time"] = pd.to_datetime(df["exec_date"], utc=True)
         df.set_index("time", inplace=True)
