@@ -76,6 +76,7 @@ class BitFlyerClient(BaseClient):
         freq = convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
+        df = df.sort_values(by="id")
 
         df["time"] = pd.to_datetime(df["exec_date"], utc=True)
         df.set_index("time", inplace=True)
@@ -129,7 +130,7 @@ class BitFlyerClient(BaseClient):
             if len(executions_chunk) != max_executions:
                 break
 
-            oldest_execution = executions_chunk[-1]
+            *_, oldest_execution = executions_chunk
             before = oldest_execution.id
             current_ts = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.tz).timestamp() * 1000
             time.sleep(1)

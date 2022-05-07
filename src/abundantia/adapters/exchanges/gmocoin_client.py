@@ -22,9 +22,9 @@ class GMOCoinClient(BaseClient):
         60: "1min",
         300: "5min",
         600: "10min",
-        900: " 15min",
-        1800: " 30min",
-        3600: " 1hour",
+        900: "15min",
+        1800: "30min",
+        3600: "1hour",
         14400: "4hour",
         28800: "8hour",
         43200: "12hour",
@@ -33,6 +33,11 @@ class GMOCoinClient(BaseClient):
     }
 
     def get_klines_by_http(self, symbol: GMOCoinSymbols, interval: int, date: datetime) -> list[GMOCoinKline]:
+        """
+        date の指定に対して日本時間 06:00 から取得
+        2022/01/01 を指定すると 2022/01/01 06:00 ~ 2022/01/02 05:59:59 まで取得
+        """
+
         klines: list[GMOCoinKline] = []
         params = {
             "symbol": symbol.name,
@@ -123,14 +128,15 @@ class GMOCoinClient(BaseClient):
         klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000).astype(int)
         return klines
 
+    @classmethod
     @pa.check_types
     def convert_klines_to_common_klines(
-        self, symbol: GMOCoinSymbols, interval: int, gmo_klines: list[GMOCoinKline]
+        cls, symbol: GMOCoinSymbols, interval: int, gmo_klines: list[GMOCoinKline]
     ) -> DataFrame[CommonKlineSchema]:
         klines = pd.DataFrame(gmo_klines)
         klines.sort_values(by="openTime", inplace=True)
 
-        klines["exchange"] = self.name
+        klines["exchange"] = cls.name
         klines["symbol"] = symbol.name
         klines["interval"] = interval
 
@@ -149,6 +155,12 @@ class GMOCoinClient(BaseClient):
         self, symbol: GMOCoinSymbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
 
+        start_ts = start_date.timestamp() * 1000
+        end_ts = end_date.timestamp() * 1000
+
+        # 日本時間 06:00:00 が開始点のため指定日の1日前から取得する
+        start_date -= timedelta(days=1)
+
         if interval < min(self.INTERVALS):
             self.logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
             raise ValueError
@@ -165,4 +177,15 @@ class GMOCoinClient(BaseClient):
             time.sleep(self.duration)
 
         klines = self.convert_klines_to_common_klines(symbol, interval, gmo_klines)
+
+        cond = klines["open_time"] >= start_ts
+        if len(klines) <= cond.sum():
+            self.logger.warning(f"lack: {start_date} {datetime.fromtimestamp(klines['open_time'].div(1000).min())}")
+        klines = klines[cond].copy()
+
+        cond = klines["open_time"] < end_ts
+        if len(klines) <= cond.sum():
+            self.logger.warning(f"lack: {datetime.fromtimestamp(klines['open_time'].div(1000).max())} {end_date}")
+        klines = klines[cond].copy()
+
         return klines
