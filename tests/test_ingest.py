@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 import pytest
 
@@ -31,7 +33,11 @@ def test_ingest_klines_from_bitflyer_executions():
     symbol = BitFlyerClient.symbols.FX_BTC_JPY
 
     executions = bitflyer.get_executions_by_http(symbol, max_executions=300)
-    klines: pd.DataFrame = bitflyer.convert_executions_to_common_klines(symbol, interval, executions)
+    start_date = datetime(2022, 5, 5)
+    end_date = datetime(2022, 5, 6)
+    klines: pd.DataFrame = bitflyer.convert_executions_to_common_klines(
+        symbol, interval, start_date, end_date, executions
+    )
 
     sqlite.create_tables()
     sqlite.insert_common_klines(klines)

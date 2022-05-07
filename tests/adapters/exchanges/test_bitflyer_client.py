@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from abundantia.adapters.exchanges.bitflyer_client import BitFlyerClient
@@ -56,9 +58,8 @@ class TestBitflyerClient:
         ]
         symbol = BitFlyerClient.symbols.FX_BTC_JPY
         interval = 60
+        start_date = datetime(2022, 4, 12)
+        end_date = datetime(2022, 4, 13)
 
-        klines = self.client.convert_executions_to_common_klines(symbol, interval, executions, inclusive="neither")
-        assert len(klines) == 0
-
-        klines = self.client.convert_executions_to_common_klines(symbol, interval, executions, inclusive="both")
-        assert len(klines) == 2
+        klines = self.client.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)
+        assert len(klines) == 1440

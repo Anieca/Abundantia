@@ -131,16 +131,29 @@ class GMOCoinClient(BaseClient):
     @classmethod
     @pa.check_types
     def convert_klines_to_common_klines(
-        cls, symbol: GMOCoinSymbols, interval: int, gmo_klines: list[GMOCoinKline]
+        cls,
+        symbol: GMOCoinSymbols,
+        interval: int,
+        start_date: datetime,
+        end_date: datetime,
+        gmo_klines: list[GMOCoinKline],
     ) -> DataFrame[CommonKlineSchema]:
-        klines = pd.DataFrame(gmo_klines)
-        klines.sort_values(by="openTime", inplace=True)
 
+        sub_klines = pd.DataFrame(gmo_klines).rename({"openTime": "open_time"}, axis=1)
+        sub_klines["time"] = sub_klines["open_time"].div(1000).map(datetime.fromtimestamp)
+        sub_klines = sub_klines.set_index("time").sort_index()
+        del sub_klines["open_time"]
+
+        index = pd.date_range(
+            start_date, end_date, freq=convert_interval_to_freq(interval), inclusive="left", name="time"
+        )
+        klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
         klines["exchange"] = cls.name
         klines["symbol"] = symbol.name
         klines["interval"] = interval
+        klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
+        del klines["time"]
 
-        klines = klines.rename({"openTime": "open_time"}, axis=1)
         return klines
 
     @classmethod
@@ -155,37 +168,24 @@ class GMOCoinClient(BaseClient):
         self, symbol: GMOCoinSymbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
 
-        start_ts = start_date.timestamp() * 1000
-        end_ts = end_date.timestamp() * 1000
-
         # 日本時間 06:00:00 が開始点のため指定日の1日前から取得する
-        start_date -= timedelta(days=1)
+        req_start_date = start_date - timedelta(days=1)
 
         if interval < min(self.INTERVALS):
             self.logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
             raise ValueError
 
-        if start_date < datetime(2021, 4, 15):
-            self.logger.error(f"{start_date} is too small. mininum is {datetime(2021, 4, 15)}")
+        if start_date < datetime(2021, 4, 16):
+            self.logger.error(f"{start_date} is too small. mininum is {datetime(2021, 4, 16)}")
             raise ValueError
 
-        date = start_date
+        date = req_start_date
         gmo_klines = []
         while date < end_date:
             gmo_klines += self.get_klines_by_http(symbol, interval, date)
             date += timedelta(days=1)
             time.sleep(self.duration)
 
-        klines = self.convert_klines_to_common_klines(symbol, interval, gmo_klines)
-
-        cond = klines["open_time"] >= start_ts
-        if len(klines) <= cond.sum():
-            self.logger.warning(f"lack: {start_date} {datetime.fromtimestamp(klines['open_time'].div(1000).min())}")
-        klines = klines[cond].copy()
-
-        cond = klines["open_time"] < end_ts
-        if len(klines) <= cond.sum():
-            self.logger.warning(f"lack: {datetime.fromtimestamp(klines['open_time'].div(1000).max())} {end_date}")
-        klines = klines[cond].copy()
+        klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, gmo_klines)
 
         return klines
