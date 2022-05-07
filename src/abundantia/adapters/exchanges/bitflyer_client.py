@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import time
 from datetime import datetime, timedelta
-from typing import Literal
 
 import pandas as pd
 import pandera as pa
@@ -70,32 +69,33 @@ class BitFlyerClient(BaseClient):
         cls,
         symbol: BitFlyerSymbols,
         interval: int,
+        start_date: datetime,
+        end_date: datetime,
         executions: list[BitFlyerExecution],
-        inclusive: Literal["both", "neither"] = "both",
     ) -> DataFrame[CommonKlineSchema]:
         freq = convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
-        df = df.sort_values(by="id")
+        df = df.sort_values(by="id").reset_index(drop=True)
 
-        df["time"] = pd.to_datetime(df["exec_date"], utc=True)
-        df.set_index("time", inplace=True)
-        df.sort_index(inplace=True)
+        df["time"] = pd.to_datetime(df["exec_date"], utc=True).dt.tz_convert(cls.tz)
+        df = df.set_index("time").sort_index()
 
-        date_range = cls.get_date_range(df.index, freq, inclusive)
+        index = pd.date_range(
+            start_date, end_date, freq=convert_interval_to_freq(interval), inclusive="left", name="time", tz=cls.tz
+        )
 
         group = df.resample(freq)
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
 
-        klines = pd.DataFrame(index=date_range)
+        klines = pd.DataFrame(index=index).join(ohlc).join(volume).reset_index()
         klines["exchange"] = cls.name
         klines["symbol"] = symbol.name
         klines["interval"] = interval
-        klines = klines.join(ohlc).join(volume)
+        klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
+        del klines["time"]
 
-        klines = klines.reset_index()
-        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000).astype(int)
         return klines
 
     def get_klines(
@@ -114,16 +114,16 @@ class BitFlyerClient(BaseClient):
             self.logger.error("Only tz_naive datetime object can be accepted.")
             raise ValueError
 
-        start_ts = start_date.replace(tzinfo=self.tz).timestamp() * 1000
-        end_ts = end_date.replace(tzinfo=self.tz).timestamp() * 1000
-        current_ts = end_date.replace(tzinfo=self.tz).timestamp() * 1000
+        start_date = start_date.replace(tzinfo=self.tz)
+        end_date = end_date.replace(tzinfo=self.tz)
+        current_date = end_date.replace(tzinfo=self.tz)
 
         before = None
         max_executions = 500
 
         executions: list[BitFlyerExecution] = []
-        while current_ts > start_ts:
-            self.logger.info(f"{current_ts} {start_ts} {len(executions)}")
+        while current_date > start_date:
+            self.logger.info(f"{current_date} {start_date} {len(executions)}")
             executions_chunk = self.get_executions_by_http(symbol, before=before, max_executions=max_executions)
             executions += executions_chunk
 
@@ -132,19 +132,8 @@ class BitFlyerClient(BaseClient):
 
             *_, oldest_execution = executions_chunk
             before = oldest_execution.id
-            current_ts = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.tz).timestamp() * 1000
-            time.sleep(1)
+            current_date = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.tz)
+            time.sleep(self.duration)
 
-        klines = self.convert_executions_to_common_klines(symbol, interval, executions)
-
-        cond = klines["open_time"] >= start_ts
-        if len(klines) <= cond.sum():
-            self.logger.warning(f"lack: {start_date} {datetime.fromtimestamp(klines['open_time'].div(1000).min())}")
-        klines = klines[cond].copy()
-
-        cond = klines["open_time"] < end_ts
-        if len(klines) <= cond.sum():
-            self.logger.warning(f"lack: {datetime.fromtimestamp(klines['open_time'].div(1000).max())} {end_date}")
-        klines = klines[cond].copy()
-
+        klines = self.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)
         return klines
