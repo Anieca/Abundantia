@@ -8,7 +8,7 @@ from abundantia.schema.gmocoin import GMOCoinExecution
 
 class TestGMOCoinClient:
     def setup_method(self):
-        self.client = GMOCoinClient(log_level="WARNING")
+        self.client = GMOCoinClient()
 
     @pytest.mark.exchange
     def test_get_klines_by_http(self):

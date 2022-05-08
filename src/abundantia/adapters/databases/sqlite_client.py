@@ -11,11 +11,12 @@ from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.model import CommonKlineModel
 from abundantia.utils import setup_logger
 
+logger = setup_logger(__name__)
+
 
 class SQLiteClient:
     def __init__(self, file_path: str = "sqlite:///resources/db.sqlite3", log_level: str = "DEBUG") -> None:
         self.engine = sqlalchemy.create_engine(file_path, echo=False)
-        self.logger = setup_logger(self.__class__.__name__, log_level)
 
     def create_tables(self) -> None:
         mapper_registry.metadata.create_all(bind=self.engine)
@@ -34,11 +35,11 @@ class SQLiteClient:
                 except IntegrityError:
                     duplicates += 1
                 except Exception:
-                    self.logger.exception("Insertion error.")
+                    logger.exception("Insertion error.")
             sess.commit()
 
         if duplicates > 0:
-            self.logger.warning(f"Insertion were skipped for {duplicates} duplicated rows.")
+            logger.warning(f"Insertion were skipped for {duplicates} duplicated rows.")
 
     def select_common_klines(self) -> list[Row]:
         with Session(self.engine) as sess:

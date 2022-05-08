@@ -8,7 +8,9 @@ from pandera.typing import DataFrame
 from abundantia.adapters.exchanges.base import BaseClient
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.ftx import FTXKline, FTXSymbols
-from abundantia.utils import convert_interval_to_freq
+from abundantia.utils import convert_interval_to_freq, setup_logger
+
+logger = setup_logger(__name__)
 
 
 class FTXClient(BaseClient):
@@ -37,7 +39,7 @@ class FTXClient(BaseClient):
             return klines
 
         if not result.get("success"):
-            self.logger.error(result.get("error"))
+            logger.error(result.get("error"))
             raise ValueError
 
         klines = [FTXKline(**r) for r in result.get("result", [])]

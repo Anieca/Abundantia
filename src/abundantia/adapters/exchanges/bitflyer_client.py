@@ -10,7 +10,9 @@ from pandera.typing import DataFrame
 from abundantia.adapters.exchanges.base import BaseClient
 from abundantia.schema.bitflyer import BitFlyerExecution, BitFlyerSymbols
 from abundantia.schema.common import CommonKlineSchema
-from abundantia.utils import convert_interval_to_freq
+from abundantia.utils import convert_interval_to_freq, setup_logger
+
+logger = setup_logger(__name__)
 
 
 class BitFlyerClient(BaseClient):
@@ -47,18 +49,18 @@ class BitFlyerClient(BaseClient):
                 break
 
             if not isinstance(result, list):
-                self.logger.error(result)
+                logger.error(result)
                 break
 
             executions = result
             all_executions += [BitFlyerExecution(**e) for e in executions]
 
             if len(executions) != count:
-                self.logger.warn(f"{len(executions)} != {count}.")
+                logger.warn(f"{len(executions)} != {count}.")
                 break
 
             params["before"] = str(all_executions[-1].id)
-            self.logger.info(f"{all_executions[0].exec_date}, {all_executions[-1].exec_date}, {len(all_executions)}")
+            logger.info(f"{all_executions[0].exec_date}, {all_executions[-1].exec_date}, {len(all_executions)}")
             time.sleep(self.duration)
 
         return all_executions
@@ -103,15 +105,15 @@ class BitFlyerClient(BaseClient):
     ) -> DataFrame[CommonKlineSchema]:
 
         if start_date >= end_date:
-            self.logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
+            logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
             raise ValueError
 
         if start_date < datetime.now() - timedelta(days=40):
-            self.logger.error(f"{start_date} is too old.")
+            logger.error(f"{start_date} is too old.")
             raise ValueError
 
         if start_date.tzinfo is not None or end_date.tzinfo is not None:
-            self.logger.error("Only tz_naive datetime object can be accepted.")
+            logger.error("Only tz_naive datetime object can be accepted.")
             raise ValueError
 
         start_date = start_date.replace(tzinfo=self.tz)
@@ -123,7 +125,7 @@ class BitFlyerClient(BaseClient):
 
         executions: list[BitFlyerExecution] = []
         while current_date > start_date:
-            self.logger.info(f"{current_date} {start_date} {len(executions)}")
+            logger.info(f"{current_date} {start_date} {len(executions)}")
             executions_chunk = self.get_executions_by_http(symbol, before=before, max_executions=max_executions)
             executions += executions_chunk
 
