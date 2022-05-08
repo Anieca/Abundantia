@@ -9,7 +9,9 @@ from pandera.typing import DataFrame
 from abundantia.adapters.exchanges.base import BaseClient
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
-from abundantia.utils import convert_interval_to_freq
+from abundantia.utils import convert_interval_to_freq, setup_logger
+
+logger = setup_logger(__name__)
 
 
 class GMOCoinClient(BaseClient):
@@ -51,7 +53,7 @@ class GMOCoinClient(BaseClient):
             return klines
 
         if result.get("status") != 0:
-            self.logger.error(result)
+            logger.error(result)
             return klines
 
         klines = [GMOCoinKline(**d) for d in result.get("data", [])]
@@ -73,7 +75,7 @@ class GMOCoinClient(BaseClient):
                 break
 
             if result.get("status") != 0:
-                self.logger.error(result)
+                logger.error(result)
                 break
 
             data = result.get("data", {})
@@ -82,15 +84,15 @@ class GMOCoinClient(BaseClient):
             all_executions += [GMOCoinExecution(**e) for e in executions]
 
             if current_page is None:
-                self.logger.warn(f"pagination error. {result}")
+                logger.warn(f"pagination error. {result}")
                 break
 
             if len(executions) != count:
-                self.logger.warn(f"{len(executions)} != {count}.")
+                logger.warn(f"{len(executions)} != {count}.")
                 break
 
             params["page"] = str(current_page + 1)
-            self.logger.info(f"{all_executions[0].timestamp}, {all_executions[-1].timestamp}, {len(all_executions)}")
+            logger.info(f"{all_executions[0].timestamp}, {all_executions[-1].timestamp}, {len(all_executions)}")
             time.sleep(self.duration)
 
         return all_executions
@@ -172,11 +174,11 @@ class GMOCoinClient(BaseClient):
         req_start_date = start_date - timedelta(days=1)
 
         if interval < min(self.INTERVALS):
-            self.logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
+            logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
             raise ValueError
 
         if start_date < datetime(2021, 4, 16):
-            self.logger.error(f"{start_date} is too small. mininum is {datetime(2021, 4, 16)}")
+            logger.error(f"{start_date} is too small. mininum is {datetime(2021, 4, 16)}")
             raise ValueError
 
         date = req_start_date

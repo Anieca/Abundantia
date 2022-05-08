@@ -12,24 +12,25 @@ from pandera.typing import DataFrame
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.utils import setup_logger
 
+logger = setup_logger(__name__)
+
 
 class BaseClient(metaclass=ABCMeta):
     tz = gettz()
     http_url = ""
 
-    def __init__(self, duration: int = 1, log_level: str = "DEBUG") -> None:
+    def __init__(self, duration: int = 1) -> None:
         self.duration = duration
-        self.logger = setup_logger(self.__class__.__name__, log_level)
 
     def get(self, url: str, params: dict[str, Any] | None = None) -> Any | None:
-        self.logger.info(params)
+        logger.info(params)
         result: Any | None = None
 
         try:
             response = requests.get(self.http_url + url, params=params)
             result = response.json()
         except Exception:
-            self.logger.exception("requests error.")
+            logger.exception("requests error.")
 
         return result
 

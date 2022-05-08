@@ -8,7 +8,9 @@ from pandera.typing import DataFrame
 from abundantia.adapters.exchanges.base import BaseClient
 from abundantia.schema.bybit import BybitInversePerpetualSymbols, BybitKline
 from abundantia.schema.common import CommonKlineSchema
-from abundantia.utils import convert_interval_to_freq
+from abundantia.utils import convert_interval_to_freq, setup_logger
+
+logger = setup_logger(__name__)
 
 
 class BybitInversePerpetualClient(BaseClient):
@@ -87,7 +89,7 @@ class BybitInversePerpetualClient(BaseClient):
     ) -> DataFrame[CommonKlineSchema]:
 
         if interval < min(self.INTERVALS):
-            self.logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
+            logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
             raise ValueError
 
         limit = 200
