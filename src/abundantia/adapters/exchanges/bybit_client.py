@@ -42,7 +42,7 @@ class BybitInversePerpetualClient(BaseClient):
             "interval": self.convert_interval_to_specific(interval),
             "from": int(date.timestamp()),
         }
-        result = self.get(f"{self.http_url}/v2/public/kline/list", params)
+        result = self.get("/v2/public/kline/list", params)
 
         if result is None:
             return klines

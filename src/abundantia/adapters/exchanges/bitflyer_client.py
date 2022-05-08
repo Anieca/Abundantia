@@ -41,7 +41,7 @@ class BitFlyerClient(BaseClient):
             params["after"] = str(after)
 
         while len(all_executions) < max_executions:
-            result = self.get(f"{self.http_url}/v1/executions", params=params)
+            result = self.get("/v1/executions", params=params)
 
             if result is None:
                 break
