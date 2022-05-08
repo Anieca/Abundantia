@@ -8,7 +8,7 @@ from abundantia.schema.bitflyer import BitFlyerExecution
 
 class TestBitflyerClient:
     def setup_method(self):
-        self.client = BitFlyerClient(log_level="WARNING")
+        self.client = BitFlyerClient()
 
     @pytest.mark.exchange
     def test_get_executions_by_http(self):
