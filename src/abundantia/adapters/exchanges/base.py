@@ -15,17 +15,18 @@ from abundantia.utils import setup_logger
 
 class BaseClient(metaclass=ABCMeta):
     tz = gettz()
+    http_url = ""
 
     def __init__(self, duration: int = 1, log_level: str = "DEBUG") -> None:
         self.duration = duration
         self.logger = setup_logger(self.__class__.__name__, log_level)
 
-    def get(self, url: str, params: dict[str, Any]) -> Any | None:
+    def get(self, url: str, params: dict[str, Any] | None = None) -> Any | None:
         self.logger.info(params)
         result: Any | None = None
 
         try:
-            response = requests.get(url, params=params)
+            response = requests.get(self.http_url + url, params=params)
             result = response.json()
         except Exception:
             self.logger.exception("requests error.")

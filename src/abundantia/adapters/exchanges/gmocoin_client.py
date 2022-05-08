@@ -45,7 +45,7 @@ class GMOCoinClient(BaseClient):
             "date": self.convert_datetime_to_specific(date),
         }
 
-        result = self.get(f"{self.http_url}/v1/klines", params)
+        result = self.get("/v1/klines", params)
 
         if result is None:
             return klines
@@ -67,7 +67,7 @@ class GMOCoinClient(BaseClient):
         params = {"symbol": symbol.name, "page": str(page), "count": str(count)}
 
         while len(all_executions) < max_executions:
-            result = self.get(f"{self.http_url}/v1/trades", params=params)
+            result = self.get("/v1/trades", params=params)
 
             if result is None:
                 break
