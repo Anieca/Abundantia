@@ -6,7 +6,7 @@ import pandera as pa
 from pandera.typing import DataFrame
 
 from abundantia.adapters.exchanges.base import BaseClient
-from abundantia.logging import setup_logger
+from abundantia.logger import setup_logger
 from abundantia.schema.bybit import BybitInversePerpetualSymbols, BybitKline
 from abundantia.schema.common import CommonKlineSchema
 

@@ -10,7 +10,7 @@ import requests
 from dateutil.tz import gettz
 from pandera.typing import DataFrame
 
-from abundantia.logging import setup_logger
+from abundantia.logger import setup_logger
 from abundantia.schema.common import CommonKlineSchema
 
 logger = setup_logger(__name__)
