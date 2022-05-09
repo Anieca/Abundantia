@@ -3,29 +3,31 @@ from datetime import datetime
 from typing import Any
 
 import pandas as pd
+import pandera as pa
 from pandera.typing import DataFrame
 
 from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.logging import setup_logger
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.ftx import FTXKline, FTXSymbols
-from abundantia.utils import convert_interval_to_freq, setup_logger
 
 logger = setup_logger(__name__)
 
 
 class FTXClient(BaseClient):
-    name: str = "FTX"
-    http_url: str = "https://ftx.com/api"
-    ws_url: str = ""
-    symbols = FTXSymbols
+    NAME: str = "FTX"
+    HTTP_URL: str = "https://ftx.com/api"
+    WS_URL: str = ""
+    SYMBOLS = FTXSymbols
 
+    @classmethod
     def get_klines_by_http(
-        self, symbol: FTXSymbols, interval: int, start_time: datetime, end_time: datetime
+        cls, symbol: FTXSymbols, interval: int, start_time: datetime, end_time: datetime
     ) -> list[FTXKline]:
         """指定不可能だが最大 1500 件"""
 
         klines: list[FTXKline] = []
-        if end_time > pd.Timestamp(datetime.now(), tzinfo=self.tz).ceil("D"):
+        if end_time > pd.Timestamp(datetime.now(), tzinfo=cls.TZ).ceil("D"):
             raise ValueError
 
         params = {
@@ -33,7 +35,7 @@ class FTXClient(BaseClient):
             "start_time": int(start_time.timestamp()),
             "end_time": int(end_time.timestamp()),
         }
-        result = self.get(f"/markets/{symbol.value}/candles", params)
+        result = cls.get(f"/markets/{symbol.value}/candles", params)
 
         if result is None:
             return klines
@@ -51,9 +53,9 @@ class FTXClient(BaseClient):
         if interval < 60:
             raise NotImplementedError
 
-        start_date = start_date.replace(tzinfo=self.tz)
-        end_date = end_date.replace(tzinfo=self.tz)
-        req_end_date = min(end_date, pd.Timestamp(datetime.now(), tzinfo=self.tz))
+        start_date = start_date.replace(tzinfo=self.TZ)
+        end_date = end_date.replace(tzinfo=self.TZ)
+        req_end_date = min(end_date, pd.Timestamp(datetime.now(), tzinfo=self.TZ))
         ftx_klines = []
 
         current_date = req_end_date
@@ -62,7 +64,7 @@ class FTXClient(BaseClient):
             ftx_klines += klines_chunk
 
             oldest_kline, *_ = klines_chunk
-            current_date = pd.Timestamp(oldest_kline.startTime).tz_convert(self.tz)
+            current_date = pd.Timestamp(oldest_kline.startTime).tz_convert(self.TZ)
             time.sleep(self.duration)
 
         klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, ftx_klines)
@@ -70,6 +72,7 @@ class FTXClient(BaseClient):
         return klines
 
     @classmethod
+    @pa.check_types
     def convert_klines_to_common_klines(
         cls,
         symbol: FTXSymbols,
@@ -78,16 +81,17 @@ class FTXClient(BaseClient):
         end_date: datetime,
         ftx_klines: list[FTXKline],
     ) -> DataFrame[CommonKlineSchema]:
+
         sub_klines = pd.DataFrame(ftx_klines)
-        sub_klines["time"] = pd.to_datetime(sub_klines["startTime"]).dt.tz_convert(cls.tz)  # overwrite response
+        sub_klines["time"] = pd.to_datetime(sub_klines["startTime"]).dt.tz_convert(cls.TZ)  # overwrite response
         sub_klines = sub_klines.set_index("time").sort_index()
         del sub_klines["startTime"]
 
         index = pd.date_range(
-            start_date, end_date, freq=convert_interval_to_freq(interval), inclusive="left", name="time", tz=cls.tz
+            start_date, end_date, freq=cls.convert_interval_to_freq(interval), inclusive="left", name="time", tz=cls.TZ
         )
         klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
-        klines["exchange"] = cls.name
+        klines["exchange"] = cls.NAME
         klines["symbol"] = symbol.value
         klines["interval"] = interval
         klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)

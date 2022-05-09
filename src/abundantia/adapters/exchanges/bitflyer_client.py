@@ -8,18 +8,18 @@ import pandera as pa
 from pandera.typing import DataFrame
 
 from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.logging import setup_logger
 from abundantia.schema.bitflyer import BitFlyerExecution, BitFlyerSymbols
 from abundantia.schema.common import CommonKlineSchema
-from abundantia.utils import convert_interval_to_freq, setup_logger
 
 logger = setup_logger(__name__)
 
 
 class BitFlyerClient(BaseClient):
-    name: str = "BitFlyer"
-    http_url: str = "https://api.bitflyer.com"
-    ws_url: str = "wss"
-    symbols = BitFlyerSymbols
+    NAME: str = "BitFlyer"
+    HTTP_URL: str = "https://api.bitflyer.com"
+    WS_URL: str = ""
+    SYMBOLS = BitFlyerSymbols
 
     def get_executions_by_http(
         self,
@@ -75,24 +75,22 @@ class BitFlyerClient(BaseClient):
         end_date: datetime,
         executions: list[BitFlyerExecution],
     ) -> DataFrame[CommonKlineSchema]:
-        freq = convert_interval_to_freq(interval)
+        freq = cls.convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
         df = df.sort_values(by="id").reset_index(drop=True)
 
-        df["time"] = pd.to_datetime(df["exec_date"], utc=True).dt.tz_convert(cls.tz)
+        df["time"] = pd.to_datetime(df["exec_date"], utc=True).dt.tz_convert(cls.TZ)
         df = df.set_index("time").sort_index()
 
-        index = pd.date_range(
-            start_date, end_date, freq=convert_interval_to_freq(interval), inclusive="left", name="time", tz=cls.tz
-        )
+        index = pd.date_range(start_date, end_date, freq=freq, inclusive="left", name="time", tz=cls.TZ)
 
         group = df.resample(freq)
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
 
         klines = pd.DataFrame(index=index).join(ohlc).join(volume).reset_index()
-        klines["exchange"] = cls.name
+        klines["exchange"] = cls.NAME
         klines["symbol"] = symbol.name
         klines["interval"] = interval
         klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
@@ -116,9 +114,9 @@ class BitFlyerClient(BaseClient):
             logger.error("Only tz_naive datetime object can be accepted.")
             raise ValueError
 
-        start_date = start_date.replace(tzinfo=self.tz)
-        end_date = end_date.replace(tzinfo=self.tz)
-        current_date = end_date.replace(tzinfo=self.tz)
+        start_date = start_date.replace(tzinfo=self.TZ)
+        end_date = end_date.replace(tzinfo=self.TZ)
+        current_date = end_date.replace(tzinfo=self.TZ)
 
         before = None
         max_executions = 500
@@ -134,7 +132,7 @@ class BitFlyerClient(BaseClient):
 
             *_, oldest_execution = executions_chunk
             before = oldest_execution.id
-            current_date = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.tz)
+            current_date = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.TZ)
             time.sleep(self.duration)
 
         klines = self.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)

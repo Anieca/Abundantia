@@ -8,7 +8,7 @@ from abundantia.schema.model import CommonKlineModel
 @pytest.mark.database
 class TestSQLiteClient:
     def setup_method(self):
-        self.sqlite = SQLiteClient(file_path="sqlite:///resources/testdb.sqlite3", log_level="ERROR")
+        self.sqlite = SQLiteClient(file_path="sqlite:///resources/testdb.sqlite3")
         self.sqlite.create_tables()
 
     def teardown_method(self):
