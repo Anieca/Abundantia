@@ -87,14 +87,5 @@ class FTXClient(BaseClient):
         sub_klines = sub_klines.set_index("time").sort_index()
         del sub_klines["startTime"]
 
-        index = pd.date_range(
-            start_date, end_date, freq=cls.convert_interval_to_freq(interval), inclusive="left", name="time", tz=cls.TZ
-        )
-        klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
-        klines["exchange"] = cls.NAME
-        klines["symbol"] = symbol.value
-        klines["interval"] = interval
-        klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
-        del klines["time"]
-
+        klines = cls._create_common_klines(symbol.value, interval, start_date, end_date, sub_klines)
         return klines
