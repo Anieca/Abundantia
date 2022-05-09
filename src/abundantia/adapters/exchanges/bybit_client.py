@@ -6,18 +6,18 @@ import pandera as pa
 from pandera.typing import DataFrame
 
 from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.logging import setup_logger
 from abundantia.schema.bybit import BybitInversePerpetualSymbols, BybitKline
 from abundantia.schema.common import CommonKlineSchema
-from abundantia.utils import convert_interval_to_freq, setup_logger
 
 logger = setup_logger(__name__)
 
 
 class BybitInversePerpetualClient(BaseClient):
-    name: str = "BybitInversePerpetual"
-    http_url: str = "https://api.bybit.com"
-    ws_url: str = ""
-    symbols = BybitInversePerpetualSymbols
+    NAME: str = "BybitInversePerpetual"
+    HTTP_URL: str = "https://api.bybit.com"
+    WS_URL: str = ""
+    SYMBOLS = BybitInversePerpetualSymbols
 
     INTERVALS: dict[int, str] = {
         60: "1",
@@ -35,16 +35,17 @@ class BybitInversePerpetualClient(BaseClient):
     }
     SWAP_INTERVALS: dict[str, int] = {v: k for k, v in INTERVALS.items()}
 
+    @classmethod
     def get_klines_by_http(
-        self, symbol: BybitInversePerpetualSymbols, interval: int, date: datetime
+        cls, symbol: BybitInversePerpetualSymbols, interval: int, date: datetime
     ) -> list[BybitKline]:
         klines: list[BybitKline] = []
         params = {
             "symbol": symbol.name,
-            "interval": self.convert_interval_to_specific(interval),
+            "interval": cls.convert_interval_to_specific(interval),
             "from": int(date.timestamp()),
         }
-        result = self.get("/v2/public/kline/list", params)
+        result = cls.get("/v2/public/kline/list", params)
 
         if result is None:
             return klines
@@ -69,10 +70,10 @@ class BybitInversePerpetualClient(BaseClient):
         del sub_klines["open_time"]
 
         index = pd.date_range(
-            start_date, end_date, freq=convert_interval_to_freq(interval), inclusive="left", name="time"
+            start_date, end_date, freq=cls.convert_interval_to_freq(interval), inclusive="left", name="time"
         )
         klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
-        klines["exchange"] = cls.name
+        klines["exchange"] = cls.NAME
         klines["symbol"] = symbol.name  # overwrite response
         klines["interval"] = interval  # overwrite response
         klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)

@@ -7,18 +7,18 @@ import pandera as pa
 from pandera.typing import DataFrame
 
 from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.logging import setup_logger
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
-from abundantia.utils import convert_interval_to_freq, setup_logger
 
 logger = setup_logger(__name__)
 
 
 class GMOCoinClient(BaseClient):
-    name: str = "GMOCoin"
-    http_url: str = "https://api.coin.z.com/public"
-    ws_url: str = "wss://api.coin.z.com/ws/"
-    symbols = GMOCoinSymbols
+    NAME: str = "GMOCoin"
+    HTTP_URL: str = "https://api.coin.z.com/public"
+    WS_URL: str = "wss://api.coin.z.com/ws/"
+    SYMBOLS = GMOCoinSymbols
 
     INTERVALS: dict[int, str] = {
         60: "1min",
@@ -33,8 +33,10 @@ class GMOCoinClient(BaseClient):
         86400: "1day",
         604800: "1week",
     }
+    OLDEST_START_DATE = datetime(2021, 4, 16)
 
-    def get_klines_by_http(self, symbol: GMOCoinSymbols, interval: int, date: datetime) -> list[GMOCoinKline]:
+    @classmethod
+    def get_klines_by_http(cls, symbol: GMOCoinSymbols, interval: int, date: datetime) -> list[GMOCoinKline]:
         """
         date の指定に対して日本時間 06:00 から取得
         2022/01/01 を指定すると 2022/01/01 06:00 ~ 2022/01/02 05:59:59 まで取得
@@ -43,11 +45,11 @@ class GMOCoinClient(BaseClient):
         klines: list[GMOCoinKline] = []
         params = {
             "symbol": symbol.name,
-            "interval": self.convert_interval_to_specific(interval),
-            "date": self.convert_datetime_to_specific(date),
+            "interval": cls.convert_interval_to_specific(interval),
+            "date": cls.convert_datetime_to_specific(date),
         }
 
-        result = self.get("/v1/klines", params)
+        result = cls.get("/v1/klines", params)
 
         if result is None:
             return klines
@@ -106,7 +108,7 @@ class GMOCoinClient(BaseClient):
         executions: list[GMOCoinExecution],
         inclusive: Literal["both", "neither"] = "both",
     ) -> DataFrame[CommonKlineSchema]:
-        freq = convert_interval_to_freq(interval)
+        freq = cls.convert_interval_to_freq(interval)
 
         df = pd.DataFrame(executions)
 
@@ -121,7 +123,7 @@ class GMOCoinClient(BaseClient):
         volume: pd.Series[float] = group["size"].sum().rename("volume")
 
         klines = pd.DataFrame(index=date_range)
-        klines["exchange"] = cls.name
+        klines["exchange"] = cls.NAME
         klines["symbol"] = symbol.name
         klines["interval"] = interval
         klines = klines.join(ohlc).join(volume)
@@ -147,10 +149,10 @@ class GMOCoinClient(BaseClient):
         del sub_klines["open_time"]
 
         index = pd.date_range(
-            start_date, end_date, freq=convert_interval_to_freq(interval), inclusive="left", name="time"
+            start_date, end_date, freq=cls.convert_interval_to_freq(interval), inclusive="left", name="time"
         )
         klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
-        klines["exchange"] = cls.name
+        klines["exchange"] = cls.NAME
         klines["symbol"] = symbol.name
         klines["interval"] = interval
         klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
@@ -177,8 +179,8 @@ class GMOCoinClient(BaseClient):
             logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
             raise ValueError
 
-        if start_date < datetime(2021, 4, 16):
-            logger.error(f"{start_date} is too small. mininum is {datetime(2021, 4, 16)}")
+        if start_date < self.OLDEST_START_DATE:
+            logger.error(f"{start_date} is too old. Oldest start date is {self.OLDEST_START_DATE}")
             raise ValueError
 
         date = req_start_date

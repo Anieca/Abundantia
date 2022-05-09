@@ -14,7 +14,7 @@ def test_ingest_klines_from_gmocoin_executions():
     sqlite = SQLiteClient()
 
     interval = 60
-    symbol = GMOCoinClient.symbols.BTC_JPY
+    symbol = GMOCoinClient.SYMBOLS.BTC_JPY
 
     executions = gmo.get_executions_by_http(symbol, max_executions=300)
     klines: pd.DataFrame = gmo.convert_executions_to_common_klines(symbol, interval, executions, inclusive="neither")
@@ -30,7 +30,7 @@ def test_ingest_klines_from_bitflyer_executions():
     sqlite = SQLiteClient()
 
     interval = 60
-    symbol = BitFlyerClient.symbols.FX_BTC_JPY
+    symbol = BitFlyerClient.SYMBOLS.FX_BTC_JPY
 
     executions = bitflyer.get_executions_by_http(symbol, max_executions=300)
     start_date = datetime(2022, 5, 5)

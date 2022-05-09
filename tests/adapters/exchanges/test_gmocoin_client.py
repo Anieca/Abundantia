@@ -12,13 +12,13 @@ class TestGMOCoinClient:
 
     @pytest.mark.exchange
     def test_get_klines_by_http(self):
-        klines = self.client.get_klines_by_http(GMOCoinClient.symbols.BTC_JPY, 60, datetime(2021, 4, 15))
+        klines = self.client.get_klines_by_http(GMOCoinClient.SYMBOLS.BTC_JPY, 60, datetime(2021, 4, 15))
         assert len(klines) == 60 * 24
 
     @pytest.mark.exchange
     def test_get_executions_by_http(self):
         count = 50
-        executions = self.client.get_executions_by_http(GMOCoinClient.symbols.BTC_JPY, max_executions=count)
+        executions = self.client.get_executions_by_http(GMOCoinClient.SYMBOLS.BTC_JPY, max_executions=count)
         assert len(executions) == count
 
     def test_convert_executions_to_common_klines(self):
@@ -26,7 +26,7 @@ class TestGMOCoinClient:
             GMOCoinExecution(price=5010271.0, side="SELL", size=0.01, timestamp="2022-04-12T14:48:01.828Z"),
             GMOCoinExecution(price=5010271.0, side="BUY", size=0.01, timestamp="2022-04-12T14:46:01.828Z"),
         ]
-        symbol = self.client.symbols.BTC_JPY
+        symbol = self.client.SYMBOLS.BTC_JPY
         interval = 60
 
         klines = self.client.convert_executions_to_common_klines(symbol, interval, executions, inclusive="neither")

@@ -13,7 +13,7 @@ class TestBitflyerClient:
     @pytest.mark.exchange
     def test_get_executions_by_http(self):
         count = 50
-        executions = self.client.get_executions_by_http(BitFlyerClient.symbols.FX_BTC_JPY, max_executions=count)
+        executions = self.client.get_executions_by_http(BitFlyerClient.SYMBOLS.FX_BTC_JPY, max_executions=count)
         assert len(executions) == count
 
     @pytest.mark.exchange
@@ -56,7 +56,7 @@ class TestBitflyerClient:
                 sell_child_order_acceptance_id="JRF20220412-142921-012850",
             ),
         ]
-        symbol = BitFlyerClient.symbols.FX_BTC_JPY
+        symbol = BitFlyerClient.SYMBOLS.FX_BTC_JPY
         interval = 60
         start_date = datetime(2022, 4, 12)
         end_date = datetime(2022, 4, 13)

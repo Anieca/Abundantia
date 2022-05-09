@@ -38,7 +38,7 @@ class TestFTXClient:
                 volume=13397713.1163,
             ),
         ]
-        symbol = self.client.symbols.BTC_PERP
+        symbol = self.client.SYMBOLS.BTC_PERP
         interval = 60
         start_date = datetime(2022, 5, 6)
         end_date = datetime(2022, 5, 7)

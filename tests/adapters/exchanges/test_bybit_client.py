@@ -12,7 +12,7 @@ class TestBybitInversePerpetualClient:
 
     @pytest.mark.exchange
     def test_get_klines_by_http(self):
-        klines = self.client.get_klines_by_http(self.client.symbols.BTCUSD, 60, datetime(2022, 5, 6))
+        klines = self.client.get_klines_by_http(self.client.SYMBOLS.BTCUSD, 60, datetime(2022, 5, 6))
         assert len(klines) == 200
 
     def test_convert_klines_to_common_klines(self):
@@ -52,7 +52,7 @@ class TestBybitInversePerpetualClient:
             ),
         ]
 
-        symbol = self.client.symbols.BTCUSD
+        symbol = self.client.SYMBOLS.BTCUSD
         interval = 60
         start_date = datetime(2022, 5, 5)
         end_date = datetime(2022, 5, 6)
