@@ -65,19 +65,11 @@ class BybitInversePerpetualClient(BaseClient):
     ) -> DataFrame[CommonKlineSchema]:
 
         sub_klines = pd.DataFrame(bybit_klines)
-        sub_klines["time"] = sub_klines["open_time"].map(datetime.fromtimestamp)
+        sub_klines["time"] = pd.to_datetime(sub_klines["open_time"], unit="s", utc=True).dt.tz_convert(cls.TZ)
         sub_klines = sub_klines.set_index("time").sort_index()
         del sub_klines["open_time"]
 
-        index = pd.date_range(
-            start_date, end_date, freq=cls.convert_interval_to_freq(interval), inclusive="left", name="time"
-        )
-        klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
-        klines["exchange"] = cls.NAME
-        klines["symbol"] = symbol.name  # overwrite response
-        klines["interval"] = interval  # overwrite response
-        klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
-        del klines["time"], klines["turnover"]
+        klines = cls._create_common_klines(symbol.name, interval, start_date, end_date, sub_klines)
 
         return klines
 

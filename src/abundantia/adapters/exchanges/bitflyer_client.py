@@ -77,25 +77,18 @@ class BitFlyerClient(BaseClient):
     ) -> DataFrame[CommonKlineSchema]:
         freq = cls.convert_interval_to_freq(interval)
 
-        df = pd.DataFrame(executions)
-        df = df.sort_values(by="id").reset_index(drop=True)
+        execution_df = pd.DataFrame(executions)
+        execution_df = execution_df.sort_values(by="id").reset_index(drop=True)
 
-        df["time"] = pd.to_datetime(df["exec_date"], utc=True).dt.tz_convert(cls.TZ)
-        df = df.set_index("time").sort_index()
+        execution_df["time"] = pd.to_datetime(execution_df["exec_date"], utc=True).dt.tz_convert(cls.TZ)
+        execution_df = execution_df.set_index("time").sort_index()
 
-        index = pd.date_range(start_date, end_date, freq=freq, inclusive="left", name="time", tz=cls.TZ)
-
-        group = df.resample(freq)
+        group = execution_df.resample(freq)
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
+        sub_klines = pd.concat([ohlc, volume], axis=1)
 
-        klines = pd.DataFrame(index=index).join(ohlc).join(volume).reset_index()
-        klines["exchange"] = cls.NAME
-        klines["symbol"] = symbol.name
-        klines["interval"] = interval
-        klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
-        del klines["time"]
-
+        klines = cls._create_common_klines(symbol.name, interval, start_date, end_date, sub_klines)
         return klines
 
     def get_klines(

@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 import pandas as pd
+import pandera as pa
 import requests
 from dateutil.tz import gettz
 from pandera.typing import DataFrame
@@ -77,3 +78,23 @@ class BaseClient(metaclass=ABCMeta):
         num = interval // unit_num
         unit = cls.INTERVAL_FREQ_MAP[unit_num]
         return f"{num}{unit}"
+
+    @classmethod
+    @pa.check_types
+    def _create_common_klines(
+        cls, symbol_str: str, interval: int, start_date: datetime, end_date: datetime, sub_klines: pd.DataFrame
+    ) -> DataFrame[CommonKlineSchema]:
+        start_date = start_date.replace(tzinfo=cls.TZ)
+        end_date = end_date.replace(tzinfo=cls.TZ)
+        index = pd.date_range(
+            start_date, end_date, freq=cls.convert_interval_to_freq(interval), inclusive="left", name="time", tz=cls.TZ
+        )
+        klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
+        klines["exchange"] = cls.NAME
+        klines["symbol"] = symbol_str
+        klines["interval"] = interval  # overwrite response
+        klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
+
+        klines = klines[list(CommonKlineSchema.to_schema().columns)]
+
+        return klines

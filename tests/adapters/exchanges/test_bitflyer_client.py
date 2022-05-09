@@ -63,3 +63,4 @@ class TestBitflyerClient:
 
         klines = self.client.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)
         assert len(klines) == 1440
+        assert len(klines.dropna()) == 2
