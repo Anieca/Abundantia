@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from abundantia.adapters.exchanges.ftx_client import FTXClient
+from abundantia.exchanges.ftx_client import FTXClient
 from abundantia.schema.ftx import FTXKline
 
 

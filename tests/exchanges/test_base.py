@@ -1,4 +1,4 @@
-from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.exchanges.base import BaseClient
 
 
 class TestBaseClient:

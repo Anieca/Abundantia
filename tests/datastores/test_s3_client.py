@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from abundantia.adapters.files.s3_client import S3Client
+from abundantia.datastores.s3_client import S3Client
 
 
 @pytest.mark.integration

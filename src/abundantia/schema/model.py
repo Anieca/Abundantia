@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Float, Integer, String, Table
 
-from abundantia.adapters.databases.mapper import mapper_registry
+from abundantia.databases.mapper import mapper_registry
 from abundantia.schema.common import CommonKline
 
 

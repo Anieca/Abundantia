@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from abundantia.adapters.exchanges.binance_client import BinanceClient
+from abundantia.exchanges.binance_client import BinanceClient
 from abundantia.schema.binance import BinanceKline
 
 
