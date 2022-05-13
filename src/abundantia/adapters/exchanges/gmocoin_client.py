@@ -181,6 +181,9 @@ class GMOCoinClient(BaseClient):
             date += timedelta(days=1)
             time.sleep(self.duration)
 
+        if len(gmo_klines) == 0:
+            logger.error("Failed get klines.")
+            raise IndexError
         klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, gmo_klines)
 
         return klines
