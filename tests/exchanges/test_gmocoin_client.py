@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from abundantia.adapters.exchanges.gmocoin_client import GMOCoinClient
+from abundantia.exchanges.gmocoin_client import GMOCoinClient
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline
 
 

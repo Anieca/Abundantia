@@ -7,7 +7,7 @@ import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.adapters.exchanges.base import BaseClient
+from abundantia.exchanges.base import BaseClient
 from abundantia.logger import setup_logger
 from abundantia.schema.bitflyer import BitFlyerExecution, BitFlyerSymbols
 from abundantia.schema.common import CommonKlineSchema

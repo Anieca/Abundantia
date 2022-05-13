@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from abundantia.adapters.exchanges.bybit_client import BybitInversePerpetualClient
+from abundantia.exchanges.bybit_client import BybitInversePerpetualClient
 from abundantia.schema.bybit import BybitKline
 
 

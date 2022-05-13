@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from abundantia.adapters.exchanges.bitflyer_client import BitFlyerClient
+from abundantia.exchanges.bitflyer_client import BitFlyerClient
 from abundantia.schema.bitflyer import BitFlyerExecution
 
 

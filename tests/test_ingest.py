@@ -3,9 +3,9 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
-from abundantia.adapters.databases.sqlite_client import SQLiteClient
-from abundantia.adapters.exchanges.bitflyer_client import BitFlyerClient
-from abundantia.adapters.exchanges.gmocoin_client import GMOCoinClient
+from abundantia.databases.sqlite_client import SQLiteClient
+from abundantia.exchanges.bitflyer_client import BitFlyerClient
+from abundantia.exchanges.gmocoin_client import GMOCoinClient
 
 
 @pytest.mark.integration
@@ -17,7 +17,9 @@ def test_ingest_klines_from_gmocoin_executions():
     symbol = GMOCoinClient.SYMBOLS.BTC_JPY
 
     executions = gmo.get_executions_by_http(symbol, max_executions=300)
-    klines: pd.DataFrame = gmo.convert_executions_to_common_klines(symbol, interval, executions, inclusive="neither")
+    start_date = datetime(2022, 5, 12)
+    end_date = datetime(2022, 5, 13)
+    klines: pd.DataFrame = gmo.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)
 
     sqlite.create_tables()
     sqlite.insert_common_klines(klines)
