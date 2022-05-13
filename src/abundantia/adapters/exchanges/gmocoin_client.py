@@ -1,6 +1,5 @@
 import time
 from datetime import datetime, timedelta
-from typing import Literal
 
 import pandas as pd
 import pandera as pa
@@ -105,31 +104,23 @@ class GMOCoinClient(BaseClient):
         cls,
         symbol: GMOCoinSymbols,
         interval: int,
+        start_date: datetime,
+        end_date: datetime,
         executions: list[GMOCoinExecution],
-        inclusive: Literal["both", "neither"] = "both",
     ) -> DataFrame[CommonKlineSchema]:
         freq = cls.convert_interval_to_freq(interval)
 
-        df = pd.DataFrame(executions)
+        execution_df = pd.DataFrame(executions)
 
-        df["time"] = pd.to_datetime(df["timestamp"])
-        df.set_index("time", inplace=True)
-        df.sort_index(inplace=True)
+        execution_df["time"] = pd.to_datetime(execution_df["timestamp"], utc=True).dt.tz_convert(cls.TZ)
+        execution_df = execution_df.set_index("time").sort_index()
 
-        date_range = cls.get_date_range(df.index, freq, inclusive)
-
-        group = df.resample(freq)
+        group = execution_df.resample(freq)
         ohlc: pd.DataFrame = group["price"].ohlc()
         volume: pd.Series[float] = group["size"].sum().rename("volume")
+        sub_klines = pd.concat([ohlc, volume], axis=1)
 
-        klines = pd.DataFrame(index=date_range)
-        klines["exchange"] = cls.NAME
-        klines["symbol"] = symbol.name
-        klines["interval"] = interval
-        klines = klines.join(ohlc).join(volume)
-
-        klines = klines.reset_index()
-        klines["open_time"] = klines["open_time"].map(datetime.timestamp).mul(1000).astype(int)
+        klines = cls._create_common_klines(symbol.name, interval, start_date, end_date, sub_klines)
         return klines
 
     @classmethod
