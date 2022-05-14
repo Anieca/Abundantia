@@ -93,7 +93,7 @@ class BaseClient(metaclass=ABCMeta):
         klines = pd.DataFrame(index=index).join(sub_klines).reset_index()
         klines["exchange"] = cls.NAME
         klines["symbol"] = symbol_str
-        klines["interval"] = interval  # overwrite response
+        klines["interval"] = interval
         klines["open_time"] = klines["time"].map(datetime.timestamp).mul(1000).astype(int)
 
         klines = klines[list(CommonKlineSchema.to_schema().columns)]
@@ -102,6 +102,13 @@ class BaseClient(metaclass=ABCMeta):
 
     @classmethod
     def _check_invalid_datetime(cls, start_date: datetime, end_date: datetime) -> None:
+        if cls.is_aware(start_date) or cls.is_aware(end_date):
+            raise ValueError
+
         if start_date >= end_date:
             logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
             raise ValueError
+
+    @staticmethod
+    def is_aware(d: datetime) -> bool:
+        return d.tzinfo is not None and d.tzinfo.utcoffset(d) is not None

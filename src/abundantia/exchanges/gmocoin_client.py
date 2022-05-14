@@ -179,9 +179,7 @@ class GMOCoinClient(BaseClient):
 
     @classmethod
     def _check_invalid_datetime(cls, start_date: datetime, end_date: datetime) -> None:
-        if start_date >= end_date:
-            logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
-            raise ValueError
+        super()._check_invalid_datetime(start_date, end_date)
 
         if start_date < cls.OLDEST_START_DATE:
             logger.error(f"{start_date} is too old. Oldest start date is {cls.OLDEST_START_DATE}")
