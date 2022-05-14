@@ -99,3 +99,9 @@ class BaseClient(metaclass=ABCMeta):
         klines = klines[list(CommonKlineSchema.to_schema().columns)]
 
         return klines
+
+    @classmethod
+    def _check_invalid_datetime(cls, start_date: datetime, end_date: datetime) -> None:
+        if start_date >= end_date:
+            logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
+            raise ValueError

@@ -95,17 +95,7 @@ class BitFlyerClient(BaseClient):
         self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
 
-        if start_date >= end_date:
-            logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
-            raise ValueError
-
-        if start_date < datetime.now() - timedelta(days=40):
-            logger.error(f"{start_date} is too old.")
-            raise ValueError
-
-        if start_date.tzinfo is not None or end_date.tzinfo is not None:
-            logger.error("Only tz_naive datetime object can be accepted.")
-            raise ValueError
+        self._check_invalid_datetime(start_date, end_date)
 
         start_date = start_date.replace(tzinfo=self.TZ)
         end_date = end_date.replace(tzinfo=self.TZ)
@@ -130,3 +120,17 @@ class BitFlyerClient(BaseClient):
 
         klines = self.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)
         return klines
+
+    @classmethod
+    def _check_invalid_datetime(cls, start_date: datetime, end_date: datetime) -> None:
+        if start_date >= end_date:
+            logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
+            raise ValueError
+
+        if start_date < datetime.now() - timedelta(days=40):
+            logger.error(f"{start_date} is too old.")
+            raise ValueError
+
+        if start_date.tzinfo is not None or end_date.tzinfo is not None:
+            logger.error("Only tz_naive datetime object can be accepted.")
+            raise ValueError

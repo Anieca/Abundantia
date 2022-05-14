@@ -81,6 +81,8 @@ class BybitInversePerpetualClient(BaseClient):
         self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
 
+        self._check_invalid_datetime(start_date, end_date)
+
         if interval < min(self.INTERVALS):
             logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
             raise ValueError

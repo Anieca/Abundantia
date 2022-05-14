@@ -49,6 +49,9 @@ class FTXClient(BaseClient):
     def get_klines(
         self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
+
+        self._check_invalid_datetime(start_date, end_date)
+
         if interval < 60:
             raise NotImplementedError
 
