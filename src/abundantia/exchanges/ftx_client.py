@@ -55,8 +55,8 @@ class FTXClient(BaseClient):
         if interval < 60:
             raise NotImplementedError
 
-        start_date = start_date.replace(tzinfo=self.TZ)
-        end_date = end_date.replace(tzinfo=self.TZ)
+        start_date = self.convert_aware_datetime(start_date)
+        end_date = self.convert_aware_datetime(end_date)
         req_end_date = min(end_date, pd.Timestamp(datetime.now(), tzinfo=self.TZ))
         ftx_klines = []
 
@@ -83,6 +83,9 @@ class FTXClient(BaseClient):
         end_date: datetime,
         ftx_klines: list[FTXKline],
     ) -> DataFrame[CommonKlineSchema]:
+
+        start_date = cls.convert_aware_datetime(start_date)
+        end_date = cls.convert_aware_datetime(end_date)
 
         sub_klines = pd.DataFrame(ftx_klines)
         sub_klines["time"] = pd.to_datetime(sub_klines["startTime"]).dt.tz_convert(cls.TZ)  # overwrite response

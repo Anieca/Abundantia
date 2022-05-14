@@ -110,6 +110,9 @@ class GMOCoinClient(BaseClient):
     ) -> DataFrame[CommonKlineSchema]:
         freq = cls.convert_interval_to_freq(interval)
 
+        start_date = cls.convert_aware_datetime(start_date)
+        end_date = cls.convert_aware_datetime(end_date)
+
         execution_df = pd.DataFrame(executions)
 
         execution_df["time"] = pd.to_datetime(execution_df["timestamp"], utc=True).dt.tz_convert(cls.TZ)
@@ -134,6 +137,9 @@ class GMOCoinClient(BaseClient):
         gmo_klines: list[GMOCoinKline],
     ) -> DataFrame[CommonKlineSchema]:
 
+        start_date = cls.convert_aware_datetime(start_date)
+        end_date = cls.convert_aware_datetime(end_date)
+
         sub_klines = pd.DataFrame(gmo_klines).rename({"openTime": "open_time"}, axis=1)
         sub_klines["time"] = pd.to_datetime(sub_klines["open_time"], unit="ms", utc=True).dt.tz_convert(cls.TZ)
         sub_klines = sub_klines.set_index("time").sort_index()
@@ -156,8 +162,8 @@ class GMOCoinClient(BaseClient):
 
         self._check_invalid_datetime(start_date, end_date)
 
-        start_date = start_date.replace(tzinfo=self.TZ)
-        end_date = end_date.replace(tzinfo=self.TZ)
+        start_date = self.convert_aware_datetime(start_date)
+        end_date = self.convert_aware_datetime(end_date)
 
         # 日本時間 06:00:00 が開始点のため指定日の1日前から取得する
         req_start_date = start_date - timedelta(days=1)
