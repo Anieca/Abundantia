@@ -85,8 +85,8 @@ class BaseClient(metaclass=ABCMeta):
     def _create_common_klines(
         cls, symbol_str: str, interval: int, start_date: datetime, end_date: datetime, sub_klines: pd.DataFrame
     ) -> DataFrame[CommonKlineSchema]:
-        start_date = start_date.replace(tzinfo=cls.TZ)
-        end_date = end_date.replace(tzinfo=cls.TZ)
+        start_date = cls.convert_aware_datetime(start_date)
+        end_date = cls.convert_aware_datetime(end_date)
         index = pd.date_range(
             start_date, end_date, freq=cls.convert_interval_to_freq(interval), inclusive="left", name="time", tz=cls.TZ
         )
@@ -112,3 +112,7 @@ class BaseClient(metaclass=ABCMeta):
     @staticmethod
     def is_aware(d: datetime) -> bool:
         return d.tzinfo is not None and d.tzinfo.utcoffset(d) is not None
+
+    @classmethod
+    def convert_aware_datetime(cls, d: datetime) -> datetime:
+        return d if cls.is_aware(d) else d.replace(tzinfo=cls.TZ)

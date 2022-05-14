@@ -78,6 +78,9 @@ class BitFlyerClient(BaseClient):
     ) -> DataFrame[CommonKlineSchema]:
         freq = cls.convert_interval_to_freq(interval)
 
+        start_date = cls.convert_aware_datetime(start_date)
+        end_date = cls.convert_aware_datetime(end_date)
+
         execution_df = pd.DataFrame(executions)
         execution_df = execution_df.sort_values(by="id").reset_index(drop=True)
 
@@ -98,8 +101,8 @@ class BitFlyerClient(BaseClient):
 
         self._check_invalid_datetime(start_date, end_date)
 
-        start_date = start_date.replace(tzinfo=self.TZ)
-        end_date = end_date.replace(tzinfo=self.TZ)
+        start_date = self.convert_aware_datetime(start_date)
+        end_date = self.convert_aware_datetime(end_date)
         current_date = end_date
 
         before = None
