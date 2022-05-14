@@ -52,15 +52,16 @@ class BitFlyerClient(BaseClient):
                 logger.error(result)
                 break
 
-            executions = result
-            all_executions += [BitFlyerExecution(**e) for e in executions]
+            executions = [BitFlyerExecution(**r) for r in result]
+            all_executions += executions
 
             if len(executions) != count:
                 logger.warn(f"{len(executions)} != {count}.")
                 break
 
-            params["before"] = str(all_executions[-1].id)
-            logger.info(f"{all_executions[0].exec_date}, {all_executions[-1].exec_date}, {len(all_executions)}")
+            latest_execution, *_, oldest_execution = executions
+            params["before"] = str(oldest_execution.id)
+            logger.info(f"{latest_execution.exec_date}, {oldest_execution.exec_date}, {len(all_executions)}")
             time.sleep(self.duration)
 
         return all_executions
@@ -99,14 +100,14 @@ class BitFlyerClient(BaseClient):
 
         start_date = start_date.replace(tzinfo=self.TZ)
         end_date = end_date.replace(tzinfo=self.TZ)
-        current_date = end_date.replace(tzinfo=self.TZ)
+        current_date = end_date
 
         before = None
         max_executions = 500
 
         executions: list[BitFlyerExecution] = []
         while current_date > start_date:
-            logger.info(f"{current_date} {start_date} {len(executions)}")
+            logger.info(f"{start_date} {current_date}")
             executions_chunk = self.get_executions_by_http(symbol, before=before, max_executions=max_executions)
             executions += executions_chunk
 
@@ -115,7 +116,7 @@ class BitFlyerClient(BaseClient):
 
             *_, oldest_execution = executions_chunk
             before = oldest_execution.id
-            current_date = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.TZ)
+            current_date = pd.Timestamp(oldest_execution.exec_date, tz=self.TZ)
             time.sleep(self.duration)
 
         klines = self.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)

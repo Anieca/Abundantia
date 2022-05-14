@@ -66,7 +66,7 @@ class FTXClient(BaseClient):
             ftx_klines += klines_chunk
 
             oldest_kline, *_ = klines_chunk
-            current_date = pd.Timestamp(oldest_kline.startTime).tz_convert(self.TZ)
+            current_date = pd.Timestamp(oldest_kline.startTime, tz=self.TZ)
             time.sleep(self.duration)
 
         klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, ftx_klines)

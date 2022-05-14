@@ -87,18 +87,21 @@ class BinanceClient(BaseClient):
 
         self._check_invalid_datetime(start_date, end_date)
 
+        start_date = start_date.replace(tzinfo=self.TZ)
+        end_date = end_date.replace(tzinfo=self.TZ)
+
         limit = 1000
         date = start_date
         binance_klines = []
         while date < end_date:
-            klines_chunk = self.get_klines_by_http(symbol, interval, date, end_date)
+            klines_chunk = self.get_klines_by_http(symbol, interval, date, end_date, limit)
             binance_klines += klines_chunk
 
             if len(klines_chunk) != limit:
                 break
 
             *_, latest_kline = klines_chunk
-            date = datetime.fromtimestamp(latest_kline.open_time / 1000 + interval)
+            date = pd.Timestamp(latest_kline.close_time + 1, unit="ms", tz=self.TZ)
 
         klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, binance_klines)
         return klines

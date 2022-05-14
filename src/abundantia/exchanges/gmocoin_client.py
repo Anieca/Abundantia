@@ -156,6 +156,9 @@ class GMOCoinClient(BaseClient):
 
         self._check_invalid_datetime(start_date, end_date)
 
+        start_date = start_date.replace(tzinfo=self.TZ)
+        end_date = end_date.replace(tzinfo=self.TZ)
+
         # 日本時間 06:00:00 が開始点のため指定日の1日前から取得する
         req_start_date = start_date - timedelta(days=1)
 

@@ -83,6 +83,9 @@ class BybitInversePerpetualClient(BaseClient):
 
         self._check_invalid_datetime(start_date, end_date)
 
+        start_date = start_date.replace(tzinfo=self.TZ)
+        end_date = end_date.replace(tzinfo=self.TZ)
+
         if interval < min(self.INTERVALS):
             logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
             raise ValueError
@@ -98,7 +101,7 @@ class BybitInversePerpetualClient(BaseClient):
                 break
 
             *_, latest_kline = klines_chunk
-            date = datetime.fromtimestamp(latest_kline.open_time + interval)
+            date = pd.Timestamp(latest_kline.open_time + interval, unit="s", tz=self.TZ)
             time.sleep(self.duration)
 
         klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, bybit_klines)
