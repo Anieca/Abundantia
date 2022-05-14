@@ -5,7 +5,7 @@ import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.exchanges.base import BaseClient
+from abundantia.exchanges.base import BaseClient, Symbols
 from abundantia.logger import setup_logger
 from abundantia.schema.bybit import BybitInversePerpetualSymbols, BybitKline
 from abundantia.schema.common import CommonKlineSchema
@@ -78,7 +78,7 @@ class BybitInversePerpetualClient(BaseClient):
         return cls.INTERVALS[interval]
 
     def get_klines(
-        self, symbol: BybitInversePerpetualSymbols, interval: int, start_date: datetime, end_date: datetime
+        self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
 
         if interval < min(self.INTERVALS):

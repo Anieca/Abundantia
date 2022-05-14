@@ -5,7 +5,7 @@ import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.exchanges.base import BaseClient
+from abundantia.exchanges.base import BaseClient, Symbols
 from abundantia.logger import setup_logger
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
@@ -151,7 +151,7 @@ class GMOCoinClient(BaseClient):
         return datetime.strftime(date, "%Y%m%d")
 
     def get_klines(
-        self, symbol: GMOCoinSymbols, interval: int, start_date: datetime, end_date: datetime
+        self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
 
         # 日本時間 06:00:00 が開始点のため指定日の1日前から取得する

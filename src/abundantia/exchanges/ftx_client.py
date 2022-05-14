@@ -1,12 +1,11 @@
 import time
 from datetime import datetime
-from typing import Any
 
 import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.exchanges.base import BaseClient
+from abundantia.exchanges.base import BaseClient, Symbols
 from abundantia.logger import setup_logger
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.ftx import FTXKline, FTXSymbols
@@ -48,7 +47,7 @@ class FTXClient(BaseClient):
         return klines
 
     def get_klines(
-        self, symbol: Any, interval: int, start_date: datetime, end_date: datetime
+        self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
         if interval < 60:
             raise NotImplementedError

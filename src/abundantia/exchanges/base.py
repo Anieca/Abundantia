@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import Any
+from typing import Any, TypeVar
 
 import pandas as pd
 import pandera as pa
@@ -11,9 +11,16 @@ from dateutil.tz import gettz
 from pandera.typing import DataFrame
 
 from abundantia.logger import setup_logger
+from abundantia.schema.binance import BinanceSymbols
+from abundantia.schema.bitflyer import BitFlyerSymbols
+from abundantia.schema.bybit import BybitInversePerpetualSymbols
 from abundantia.schema.common import CommonKlineSchema
+from abundantia.schema.ftx import FTXSymbols
+from abundantia.schema.gmocoin import GMOCoinSymbols
 
 logger = setup_logger(__name__)
+
+Symbols = TypeVar("Symbols", BinanceSymbols, BybitInversePerpetualSymbols, FTXSymbols, BitFlyerSymbols, GMOCoinSymbols)
 
 
 class BaseClient(metaclass=ABCMeta):
@@ -43,7 +50,7 @@ class BaseClient(metaclass=ABCMeta):
 
     @abstractmethod
     def get_klines(
-        self, symbol: Any, interval: int, start_date: datetime, end_date: datetime
+        self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
         pass
 
