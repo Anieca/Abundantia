@@ -5,7 +5,7 @@ import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.exchanges.base import BaseClient
+from abundantia.exchanges.base import BaseClient, Symbols
 from abundantia.logger import setup_logger
 from abundantia.schema.common import CommonKlineSchema
 from abundantia.schema.gmocoin import GMOCoinExecution, GMOCoinKline, GMOCoinSymbols
@@ -151,18 +151,16 @@ class GMOCoinClient(BaseClient):
         return datetime.strftime(date, "%Y%m%d")
 
     def get_klines(
-        self, symbol: GMOCoinSymbols, interval: int, start_date: datetime, end_date: datetime
+        self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
+
+        self._check_invalid_datetime(start_date, end_date)
 
         # 日本時間 06:00:00 が開始点のため指定日の1日前から取得する
         req_start_date = start_date - timedelta(days=1)
 
         if interval < min(self.INTERVALS):
             logger.error(f"{interval} is too small. mininum is {min(self.INTERVALS)}")
-            raise ValueError
-
-        if start_date < self.OLDEST_START_DATE:
-            logger.error(f"{start_date} is too old. Oldest start date is {self.OLDEST_START_DATE}")
             raise ValueError
 
         date = req_start_date
@@ -178,3 +176,13 @@ class GMOCoinClient(BaseClient):
         klines = self.convert_klines_to_common_klines(symbol, interval, start_date, end_date, gmo_klines)
 
         return klines
+
+    @classmethod
+    def _check_invalid_datetime(cls, start_date: datetime, end_date: datetime) -> None:
+        if start_date >= end_date:
+            logger.error(f"Must be start_date < end_date. start_date={start_date}, end_date={end_date}.")
+            raise ValueError
+
+        if start_date < cls.OLDEST_START_DATE:
+            logger.error(f"{start_date} is too old. Oldest start date is {cls.OLDEST_START_DATE}")
+            raise ValueError

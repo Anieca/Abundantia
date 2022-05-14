@@ -4,7 +4,7 @@ import pandas as pd
 
 
 class S3Client:
-    def __init__(self, bucket_name: str = "crypto-bucket-ishiirub") -> None:
+    def __init__(self, bucket_name: str) -> None:
         self.bucket_name = bucket_name
 
     def dump(self, filename: str, obj: Any, **kwargs: Any) -> None:

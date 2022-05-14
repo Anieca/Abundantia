@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 
 import pandas as pd
 import pandera as pa
 from pandera.typing import DataFrame
 
-from abundantia.exchanges.base import BaseClient
+from abundantia.exchanges.base import BaseClient, Symbols
 from abundantia.logger import setup_logger
 from abundantia.schema.binance import BinanceKline, BinanceSymbols
 from abundantia.schema.common import CommonKlineSchema
@@ -39,7 +38,7 @@ class BinanceClient(BaseClient):
 
     @classmethod
     def get_klines_by_http(
-        cls, symbol: BinanceSymbols, interval: int, start_date: datetime, end_date: datetime
+        cls, symbol: BinanceSymbols, interval: int, start_date: datetime, end_date: datetime, limit: int = 1000
     ) -> list[BinanceKline]:
 
         klines: list[BinanceKline] = []
@@ -48,7 +47,7 @@ class BinanceClient(BaseClient):
             "interval": cls.convert_interval_to_specific(interval),
             "startTime": int(start_date.timestamp() * 1000),
             "endTime": int(end_date.timestamp() * 1000),
-            "limit": 1000,
+            "limit": limit,
         }
 
         result = cls.get("/api/v3/klines", params)
@@ -69,6 +68,7 @@ class BinanceClient(BaseClient):
         end_date: datetime,
         binance_klines: list[BinanceKline],
     ) -> DataFrame[CommonKlineSchema]:
+
         sub_klines = pd.DataFrame(binance_klines)
         sub_klines["time"] = pd.to_datetime(sub_klines["open_time"], unit="ms", utc=True).dt.tz_convert(cls.TZ)
         sub_klines = sub_klines.set_index("time").sort_index()
@@ -82,8 +82,10 @@ class BinanceClient(BaseClient):
         return cls.INTERVALS[interval]
 
     def get_klines(
-        self, symbol: Any, interval: int, start_date: datetime, end_date: datetime
+        self, symbol: Symbols, interval: int, start_date: datetime, end_date: datetime
     ) -> DataFrame[CommonKlineSchema]:
+
+        self._check_invalid_datetime(start_date, end_date)
 
         limit = 1000
         date = start_date

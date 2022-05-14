@@ -66,7 +66,7 @@ def test_dump_and_load():
         ]
     )
 
-    client = S3Client()
+    client = S3Client("crypto-bucket-ishiirub")
     client.dump("test.csv", klines, index=False)
     loaded_klines = client.load("test.csv")
 
