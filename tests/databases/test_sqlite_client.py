@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from dateutil.tz import gettz
 
 from abundantia.databases.sqlite_client import SQLiteClient
 from abundantia.schema.model import CommonKlineModel
@@ -33,6 +34,7 @@ class TestSQLiteClient:
                     "low": 5181512.0,
                     "close": 5184938.0,
                     "volume": 1.74,
+                    "time": pd.Timestamp(2022, 5, 5, 12, 0, 0),
                 },
                 {
                     "exchange": "GMOCoin",
@@ -44,9 +46,11 @@ class TestSQLiteClient:
                     "low": 5182884.0,
                     "close": 5184506.0,
                     "volume": 1.72,
+                    "time": pd.Timestamp(2022, 5, 5, 12, 1, 0),
                 },
             ]
         )
+        klines["time"] = pd.to_datetime(klines["time"]).dt.tz_localize(gettz())
 
         self.sqlite.insert_common_klines(klines)
         self.sqlite.insert_common_klines(klines)

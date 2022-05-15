@@ -1,11 +1,10 @@
-from sqlalchemy import Column, Float, Integer, String, Table
+from sqlalchemy import Column, DateTime, Float, Integer, String, Table
 
 from abundantia.databases.mapper import mapper_registry
-from abundantia.schema.common import CommonKline
 
 
 @mapper_registry.mapped
-class CommonKlineModel(CommonKline):
+class CommonKlineModel:
 
     __table__ = Table(
         "common_kline",
@@ -14,6 +13,7 @@ class CommonKlineModel(CommonKline):
         Column("symbol", String(128), primary_key=True),
         Column("interval", Integer, primary_key=True),
         Column("open_time", Integer, primary_key=True),
+        Column("time", DateTime),
         Column("open", Float),
         Column("high", Float),
         Column("low", Float),
