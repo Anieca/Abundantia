@@ -56,7 +56,7 @@ class BitFlyerClient(BaseClient):
             all_executions += executions
 
             if len(executions) != count:
-                logger.warn(f"{len(executions)} != {count}.")
+                logger.warning(f"{len(executions)} != {count}.")
                 break
 
             latest_execution, *_, oldest_execution = executions

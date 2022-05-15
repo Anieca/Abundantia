@@ -85,11 +85,11 @@ class GMOCoinClient(BaseClient):
             all_executions += [GMOCoinExecution(**e) for e in executions]
 
             if current_page is None:
-                logger.warn(f"pagination error. {result}")
+                logger.warning(f"pagination error. {result}")
                 break
 
             if len(executions) != count:
-                logger.warn(f"{len(executions)} != {count}.")
+                logger.warning(f"{len(executions)} != {count}.")
                 break
 
             params["page"] = str(current_page + 1)
