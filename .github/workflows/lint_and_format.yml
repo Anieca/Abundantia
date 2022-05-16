@@ -3,7 +3,7 @@ name: Lint & Format
 on: [push]
 
 jobs:
-  build:
+  lint_and_format:
     runs-on: ubuntu-latest
     strategy:
       matrix:
