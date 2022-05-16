@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 mypy isort black types-requests types-python-dateutil
+        pip install flake8 mypy isort black types-requests types-python-dateutil pytest
     - name: flake8
       run: |
         flake8 --ignore E203,E501,W503 $(git ls-files '*.py')
@@ -30,3 +30,6 @@ jobs:
     - name: mypy
       run: |
         mypy --ignore-missing-imports $(git ls-files '*.py')
+    - name: test
+      run: |
+        pytest -vs
