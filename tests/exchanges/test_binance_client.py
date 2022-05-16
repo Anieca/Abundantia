@@ -76,5 +76,6 @@ class TestBinanceClient:
         klines = self.client.convert_klines_to_common_klines(
             self.symbol, interval, start_date, end_date, binance_klines
         )
+        print(klines)
         assert len(klines) == 1440
         assert len(klines.dropna()) == len(binance_klines)
