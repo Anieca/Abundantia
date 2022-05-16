@@ -20,7 +20,7 @@ class TestBybitInversePerpetualClient:
             BybitKline(
                 symbol="BTCUSD",
                 interval="1",
-                open_time=1651676400,
+                open_time=1651708800,
                 open=38773.0,
                 high=38789.0,
                 low=38773.0,
@@ -31,7 +31,7 @@ class TestBybitInversePerpetualClient:
             BybitKline(
                 symbol="BTCUSD",
                 interval="1",
-                open_time=1651676460,
+                open_time=1651708860,
                 open=38779.5,
                 high=38798.5,
                 low=38777.5,
@@ -42,7 +42,7 @@ class TestBybitInversePerpetualClient:
             BybitKline(
                 symbol="BTCUSD",
                 interval="1",
-                open_time=1651676520,
+                open_time=1651708920,
                 open=38798.5,
                 high=38798.5,
                 low=38750.0,

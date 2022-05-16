@@ -26,7 +26,7 @@ class TestBinanceClient:
     def test_convert_klines_to_common_klines(self):
         binance_klines = [
             BinanceKline(
-                open_time=1651676400000,
+                open_time=1651708800000,
                 open=38786.22,
                 high=38798.87,
                 low=38783.08,
@@ -40,7 +40,7 @@ class TestBinanceClient:
                 ignore="0",
             ),
             BinanceKline(
-                open_time=1651676460000,
+                open_time=1651708860000,
                 open=38785.57,
                 high=38807.33,
                 low=38778.57,
@@ -54,7 +54,7 @@ class TestBinanceClient:
                 ignore="0",
             ),
             BinanceKline(
-                open_time=1651676520000,
+                open_time=1651708920000,
                 open=38805.97,
                 high=38805.98,
                 low=38756.24,
@@ -76,5 +76,6 @@ class TestBinanceClient:
         klines = self.client.convert_klines_to_common_klines(
             self.symbol, interval, start_date, end_date, binance_klines
         )
+
         assert len(klines) == 1440
         assert len(klines.dropna()) == len(binance_klines)
