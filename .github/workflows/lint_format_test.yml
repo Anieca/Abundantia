@@ -1,9 +1,9 @@
-name: Lint & Format
+name: Lint & Format & Test
 
 on: [push]
 
 jobs:
-  lint_and_format:
+  lint_format_test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
