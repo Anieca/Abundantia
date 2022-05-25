@@ -8,6 +8,7 @@ def setup_logger(name: str, level: str = "DEBUG", logfile_path: str | None = Non
     logger.setLevel(logging.DEBUG)
 
     handlers: list[logging.Handler] = [logging.StreamHandler()]
+
     if logfile_path is not None:
         handlers.append(logging.FileHandler(logfile_path))
 
