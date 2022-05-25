@@ -3,7 +3,7 @@ name: Lint & Format & Test
 on:
   push:
     paths:
-      - "src/**"
+      - "src/abundantia/exchanges/**"
 
 jobs:
   lint_format_test:
