@@ -18,7 +18,6 @@ logger = setup_logger(__name__)
 class BitFlyerClient(BaseClient):
     NAME: str = "BitFlyer"
     HTTP_URL: str = "https://api.bitflyer.com"
-    WS_URL: str = ""
     SYMBOLS = BitFlyerSymbols
 
     def get_executions_by_http(
