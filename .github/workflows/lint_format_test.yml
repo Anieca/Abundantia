@@ -1,6 +1,9 @@
 name: Lint & Format & Test
 
-on: [push]
+on:
+  push:
+    paths:
+      - "src/abundantia/exchanges/**"
 
 jobs:
   lint_format_test:
