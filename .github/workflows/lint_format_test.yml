@@ -43,6 +43,6 @@ jobs:
         name: pytest-report
         path: tests/results/report.xml
     - name: publish test results
-      uses: EnricoMi/publish-unit-test-result-action@v1
+      uses: test-summary/action@v1
       with:
         files: tests/results/report.xml
