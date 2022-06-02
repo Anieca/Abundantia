@@ -12,7 +12,7 @@ credentials
 resources
 notebooks
 
-apis.json
+tests/results
 *.csv
 *.ipynb
 .jupyter.log
