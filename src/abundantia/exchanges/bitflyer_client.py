@@ -118,7 +118,7 @@ class BitFlyerClient(BaseClient):
 
             *_, oldest_execution = executions_chunk
             before = oldest_execution.id
-            current_date = pd.Timestamp(oldest_execution.exec_date, tz=self.TZ)
+            current_date = pd.Timestamp(oldest_execution.exec_date, tz="UTC").tz_convert(self.TZ)
             time.sleep(self.duration)
 
         klines = self.convert_executions_to_common_klines(symbol, interval, start_date, end_date, executions)
