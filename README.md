@@ -8,7 +8,7 @@ Abundantia is a data curation library for cryptocurrency exchanges.
 
 
 # Instlation
-
+WIP
 
 # Usage
 
