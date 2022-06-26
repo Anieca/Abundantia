@@ -24,9 +24,9 @@ Symbols = TypeVar("Symbols", BinanceSymbols, BybitInversePerpetualSymbols, FTXSy
 
 
 class BaseClient(metaclass=ABCMeta):
-    NAME = ""
-    HTTP_URL = ""
-    WS_URL = ""
+    NAME: str = ""
+    HTTP_URL: str = ""
+    WS_URL: str = ""
 
     TZ = gettz()
     FREQ_INTERVAL_MAP: dict[str, int] = {"S": 1, "T": 60, "H": 3600}
