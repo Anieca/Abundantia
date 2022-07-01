@@ -27,7 +27,7 @@ interval = 60
 start_date = datetime(2022, 5, 1)
 end_date = datetime(2022, 5, 2)
 
-key = f"{exchange.NAME}/{symbol.name}/{start_date.strftime()}_{end_date.strftime()}.zip"
+key = f"{exchange.NAME}/{symbol.name}/{start_date.strftime()}_{end_date.strftime()}.csv"
 
 klines = exchange.get_klines(exchange.SYMBOLS.FX_BTC_JPY, interval, start_date, end_date)
 datastore.dump(key, klines, index=False)
