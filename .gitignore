@@ -2,6 +2,7 @@
 .venv
 
 # caches
+.coverage
 .mypy_cache
 .pytest_cache
 __pycache__
