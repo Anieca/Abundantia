@@ -29,7 +29,7 @@ class BaseClient(metaclass=ABCMeta):
     WS_URL: str = ""
 
     TZ = gettz()
-    FREQ_INTERVAL_MAP: dict[str, int] = {"S": 1, "T": 60, "H": 3600}
+    FREQ_INTERVAL_MAP: dict[str, int] = {"S": 1, "T": 60, "H": 3600, "D": 86400}
     INTERVAL_FREQ_MAP: dict[int, str] = {v: k for k, v in FREQ_INTERVAL_MAP.items()}
 
     def __init__(self, duration: int = 1) -> None:
