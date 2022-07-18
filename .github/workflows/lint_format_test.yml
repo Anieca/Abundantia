@@ -38,7 +38,7 @@ jobs:
         poetry run mypy --ignore-missing-imports $(git ls-files '*.py')
     - name: test
       run: |
-        poetry run pytest -v --junitxml=./tests/results/report.xml --cov=src/abundantia | tee ./tests/results/pytest-coverage.txt
+        poetry run pytest -v --junitxml=./tests/results/report.xml --cov=src/abundantia | tee ./pytest-coverage.txt
       continue-on-error: true
     - name: Coverage Report
       uses: MishaKav/pytest-coverage-comment@main
