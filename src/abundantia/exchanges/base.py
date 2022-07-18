@@ -44,7 +44,7 @@ class BaseClient(metaclass=ABCMeta):
             response = requests.get(cls.HTTP_URL + url, params=params)
             result = response.json()
         except Exception:
-            logger.exception("requests error.")
+            logger.exception("request error")
 
         return result
 

@@ -43,5 +43,5 @@ jobs:
     - name: Coverage Report
       uses: MishaKav/pytest-coverage-comment@main
       with:
-        pytest-coverage-path: ./tests/results/pytest-coverage.txt
+        pytest-coverage-path: ./pytest-coverage.txt
         junitxml-path: ./tests/results/report.xml
