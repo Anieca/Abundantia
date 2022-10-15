@@ -27,7 +27,7 @@ class TestFTXClient:
             (datetime(2022, 1, 1, tzinfo=timezone.utc), datetime(2022, 2, 1, tzinfo=timezone.utc), 3600),
         ),
     )
-    @pytest.mark.skip
+    @pytest.mark.slow
     def test_get_klines(self, client: FTXClient, start: datetime, end: datetime, interval: int) -> None:
         klines = client.get_klines("BTC-PERP", interval, start, end)
         s, *_, e = klines
@@ -57,13 +57,16 @@ class TestFTXClient:
     def test_estimate_num_request(self, start: datetime, end: datetime, interval: int, expected: int) -> None:
         assert FTXClient._estimate_num_request(start, end, interval) == expected  # type: ignore
 
+    @pytest.mark.auth
     def test_get_open_orders(self, authed_client: FTXClient) -> None:
         assert isinstance(authed_client.get_open_orders(), tuple)
 
+    @pytest.mark.auth
     def test_place_order(self, authed_client: FTXClient) -> None:
         params = FTXOrderRequestParams(market="XRP-PERP", side="sell", price=0.6, type="limit", size=1.0)
         order = authed_client.place_order(params)
         assert order.id
 
+    @pytest.mark.auth
     def test_cancel_all_orders(self, authed_client: FTXClient) -> None:
         authed_client.cancel_all_orders("XRP-PERP")

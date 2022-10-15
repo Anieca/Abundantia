@@ -115,14 +115,16 @@ class FTXClient:
 
     def cancel_all_orders(self, market: str) -> None:
         result = self.delete("/orders", params={"market": market})
-        logger.info(result)
+        logger.debug(result)
 
     def place_order(self, params: FTXOrderRequestParams) -> FTXOrderResponse:
         result = self.post("/orders", params=params.dict())
+        logger.debug(result)
         return FTXOrderResponse.parse_obj(result)
 
     def get_open_orders(self) -> tuple[FTXOrderResponse, ...]:
         result = self.get("/orders", auth=True)
+        logger.debug(result)
         return tuple(FTXOrderResponse.parse_obj(r) for r in result)
 
     def get_klines(
@@ -150,7 +152,7 @@ class FTXClient:
             if len(klines_chunk) == 0:
                 break
             s, *_, e = klines_chunk
-            logger.info(f"Request: [{start} -> {end}] Current: [{s.startTime} -> {e.startTime}]")
+            logger.debug(f"Request: [{start} -> {end}] Current: [{s.startTime} -> {e.startTime}]")
             end = s.startTime
 
         return tuple(reversed(klines))
