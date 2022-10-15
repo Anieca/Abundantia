@@ -12,34 +12,44 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10"]
     steps:
+
     - uses: actions/checkout@v3
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Set up Poetry
       run: |
-        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+        curl -sSL https://install.python-poetry.org | python3 - -y
         echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+
     - name: Install dependencies
       run: |
         poetry install
+
     - name: flake8
       run: |
         poetry run flake8 --ignore E203,E501,W503 $(git ls-files '*.py')
+
     - name: isort
       run: |
         poetry run isort -l 120 --profile black $(git ls-files '*.py')
+
     - name: black
       run: |
         poetry run black --line-length 120 $(git ls-files '*.py')
+
     - name: mypy
       run: |
         poetry run mypy --ignore-missing-imports $(git ls-files '*.py')
+
     - name: test
       run: |
         poetry run pytest -v --junitxml=./tests/results/report.xml --cov=src/abundantia | tee ./pytest-coverage.txt
       continue-on-error: true
+
     - name: Coverage Report
       uses: MishaKav/pytest-coverage-comment@main
       with:
