@@ -47,11 +47,11 @@ jobs:
 
     - name: test
       run: |
-        poetry run pytest -v --junitxml=./tests/results/report.xml --cov=src/abundantia | tee ./pytest-coverage.txt
+        poetry run pytest tests/ -m "not auth and not slow" -v --junitxml=report.xml --cov=src/abundantia | tee ./pytest-coverage.txt
       continue-on-error: true
 
     - name: Coverage Report
       uses: MishaKav/pytest-coverage-comment@main
       with:
         pytest-coverage-path: ./pytest-coverage.txt
-        junitxml-path: ./tests/results/report.xml
+        junitxml-path: ./report.xml

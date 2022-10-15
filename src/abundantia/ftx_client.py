@@ -121,7 +121,7 @@ class FTXClient:
         result = self.post("/orders", params=params.dict())
         return FTXOrderResponse.parse_obj(result)
 
-    def get_open_orders(self) -> tuple[Any, ...]:
+    def get_open_orders(self) -> tuple[FTXOrderResponse, ...]:
         result = self.get("/orders", auth=True)
         return tuple(FTXOrderResponse.parse_obj(r) for r in result)
 
@@ -151,8 +151,8 @@ class FTXClient:
                 break
             s, *_, e = klines_chunk
             logger.info(f"Request: [{start} -> {end}] Current: [{s.startTime} -> {e.startTime}]")
+            end = s.startTime
 
-            end = klines_chunk[0].startTime
         return tuple(reversed(klines))
 
     @staticmethod
